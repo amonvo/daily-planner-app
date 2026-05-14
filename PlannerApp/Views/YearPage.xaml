@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PlannerApp.ViewModels"
+             x:Class="PlannerApp.Views.YearPage"
+             x:DataType="vm:YearViewModel"
+             Title="Rok"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="‹" Command="{Binding PrevYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Label Grid.Column="1" Text="{Binding YearLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                    <Button Grid.Column="2" Text="›" Command="{Binding NextYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                </Grid>
+            </Border>
+
+            <CollectionView ItemsSource="{Binding Tiles}" SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="8" VerticalItemSpacing="8" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MonthTile">
+                        <Border BackgroundColor="{Binding Background}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12" HeightRequest="96">
+                            <VerticalStackLayout Spacing="4" VerticalOptions="Center">
+                                <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="14" TextColor="#1E293B" HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding PercentLabel}" FontSize="20" FontAttributes="Bold" TextColor="#1E293B" HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Roční statistiky" Style="{StaticResource H2}" />
+                    <Label Text="{Binding DaysWithDataLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding LongestStreakLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding BestMonthLabel}" Style="{StaticResource Body}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Aktivity za rok" Style="{StaticResource H2}" />
+                    <CollectionView ItemsSource="{Binding ActivityStats}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ActivityStat">
+                                <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="10" Margin="0,4">
+                                    <BoxView Grid.Column="0" Color="{Binding Color}" WidthRequest="6" />
+                                    <Label Grid.Column="1" Text="{Binding Name}" Style="{StaticResource Body}" />
+                                    <Label Grid.Column="2" Text="{Binding Label}" Style="{StaticResource Muted}" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PlannerApp.ViewModels"
+             x:Class="PlannerApp.Views.WeekPage"
+             x:DataType="vm:WeekViewModel"
+             Title="Týden"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="‹" Command="{Binding PrevWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                        <Label Text="{Binding WeekLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" />
+                        <Label Text="{Binding DateRangeLabel}" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                    <Button Grid.Column="2" Text="›" Command="{Binding NextWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                </Grid>
+            </Border>
+
+            <Label Text="Dny týdne" Style="{StaticResource H2}" />
+            <CollectionView ItemsSource="{Binding Days}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:WeekDaySummary">
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="4">
+                                <Label Grid.Column="0" Grid.Row="0" Text="{Binding DayName}" Style="{StaticResource H2}" />
+                                <Label Grid.Column="1" Grid.Row="0" Text="{Binding DateLabel}" Style="{StaticResource Muted}" />
+                                <Border Grid.Column="0" Grid.Row="1" Style="{StaticResource Badge}" BackgroundColor="{Binding DayTypeColor}">
+                                    <Label Text="{Binding DayTypeLabel}" Style="{StaticResource BadgeLabel}" />
+                                </Border>
+                                <Label Grid.Column="1" Grid.Row="1" Text="{Binding PercentLabel}" Style="{StaticResource Body}" />
+                                <ProgressBar Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Progress="{Binding Progress}" HeightRequest="8" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Souhrn týdne" Style="{StaticResource H2}" />
+                    <Label Text="{Binding WeekTotalLabel}" Style="{StaticResource Body}" />
+                    <CollectionView ItemsSource="{Binding Categories}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CategorySummary">
+                                <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto" Margin="0,4">
+                                    <BoxView Grid.RowSpan="2" Grid.Column="0" Color="{Binding Color}" WidthRequest="6" />
+                                    <Label Grid.Column="1" Grid.Row="0" Text="{Binding Name}" Style="{StaticResource Body}" />
+                                    <Label Grid.Column="2" Grid.Row="0" Text="{Binding Label}" Style="{StaticResource Muted}" />
+                                    <ProgressBar Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Progress="{Binding Progress}" HeightRequest="6" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

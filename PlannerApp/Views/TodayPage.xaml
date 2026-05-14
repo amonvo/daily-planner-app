@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PlannerApp.ViewModels"
+             x:Class="PlannerApp.Views.TodayPage"
+             x:Name="TodayRoot"
+             x:DataType="vm:TodayViewModel"
+             Title="Dnes"
+             BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+            <!-- Header card -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="{Binding TodayDate}" Style="{StaticResource H1}" />
+                    <Border Style="{StaticResource Badge}" BackgroundColor="{Binding DayTypeBadgeColor}">
+                        <Label Text="{Binding DayTypeLabel}" Style="{StaticResource BadgeLabel}" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Progress -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Pokrok dne" Style="{StaticResource H2}" />
+                    <ProgressBar Progress="{Binding ProgressPercent}" HeightRequest="10" />
+                    <Label Text="{Binding ProgressLabel}" Style="{StaticResource Body}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Current block -->
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="6,*" ColumnSpacing="12">
+                    <BoxView Grid.Column="0" Color="{Binding CurrentBlockColor}" WidthRequest="6" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                        <Label Text="Aktuální aktivita" Style="{StaticResource Muted}" />
+                        <Label Text="{Binding CurrentBlockName}" Style="{StaticResource H2}" />
+                        <Label Text="{Binding CurrentBlockTime}" Style="{StaticResource Body}" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Next block -->
+            <Border Style="{StaticResource Card}" Padding="12">
+                <Label Text="{Binding NextBlockInfo}" Style="{StaticResource Body}" />
+            </Border>
+
+            <!-- Blocks list -->
+            <Label Text="Plán dne" Style="{StaticResource H2}" />
+            <CollectionView ItemsSource="{Binding Blocks}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BlockViewModel">
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,8" BackgroundColor="{Binding BackgroundColor}">
+                            <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto">
+                                <BoxView Grid.RowSpan="2" Grid.Column="0" Color="{Binding CategoryColor}" WidthRequest="6" />
+
+                                <VerticalStackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
+                                    <Label Text="{Binding TimeLabel}" Style="{StaticResource Muted}" />
+                                    <Label Text="{Binding ActivityName}" Style="{StaticResource H2}" />
+                                </VerticalStackLayout>
+
+                                <!-- Status indicator -->
+                                <Label Grid.Column="2" Grid.Row="0"
+                                       Text="?"
+                                       FontSize="22"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource AccentGreen}"
+                                       VerticalOptions="Center"
+                                       IsVisible="{Binding IsCompleted}" />
+                                <Label Grid.Column="2" Grid.Row="0"
+                                       Text="—"
+                                       FontSize="22"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource AccentGray}"
+                                       VerticalOptions="Center"
+                                       IsVisible="{Binding IsSkipped}" />
+
+                                <!-- Buttons row -->
+                                <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"
+                                                       Spacing="6" Margin="0,8,0,0"
+                                                       IsVisible="{Binding IsNotDone}">
+                                    <Button Text="Splněno"
+                                            Style="{StaticResource DoneButton}"
+                                            Command="{Binding BindingContext.MarkDoneCommand, Source={x:Reference TodayRoot}}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Text="Přeskočit"
+                                            Style="{StaticResource SkipButton}"
+                                            Command="{Binding BindingContext.MarkSkippedCommand, Source={x:Reference TodayRoot}}"
+                                            CommandParameter="{Binding}" />
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"
+                                                       Spacing="6" Margin="0,8,0,0"
+                                                       IsVisible="{Binding IsCompleted}">
+                                    <Button Text="Reset"
+                                            Style="{StaticResource ResetButton}"
+                                            Command="{Binding BindingContext.ResetBlockCommand, Source={x:Reference TodayRoot}}"
+                                            CommandParameter="{Binding}" />
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"
+                                                       Spacing="6" Margin="0,8,0,0"
+                                                       IsVisible="{Binding IsSkipped}">
+                                    <Button Text="Reset"
+                                            Style="{StaticResource ResetButton}"
+                                            Command="{Binding BindingContext.ResetBlockCommand, Source={x:Reference TodayRoot}}"
+                                            CommandParameter="{Binding}" />
+                                </HorizontalStackLayout>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Notes -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Poznámky" Style="{StaticResource H2}" />
+                    <Editor Text="{Binding Notes, Mode=TwoWay}" AutoSize="TextChanges" HeightRequest="100" Placeholder="Tvoje poznámky k dnešnímu dni..." />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
