@@ -19,6 +19,17 @@ namespace PlannerApp.ViewModels
         public bool HasData { get; set; }
         public string DotColor { get; set; } = "#CBD5E1";
         public Color CellBackground { get; set; } = Colors.Transparent;
+        public bool IsSpecialDay { get; set; }
+    }
+
+    public partial class MonthCategoryStat : ObservableObject
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Done { get; set; }
+        public int Total { get; set; }
+        public double Progress { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public string Color { get; set; } = "#7C3AED";
     }
 
     public partial class MonthViewModel : BaseViewModel
@@ -53,7 +64,22 @@ namespace PlannerApp.ViewModels
         private string streakLabel = string.Empty;
 
         [ObservableProperty]
+        private string longestStreakLabel = string.Empty;
+
+        [ObservableProperty]
         private string bestWeekLabel = string.Empty;
+
+        [ObservableProperty]
+        private string worstWeekLabel = string.Empty;
+
+        [ObservableProperty]
+        private string specialDaysLabel = string.Empty;
+
+        [ObservableProperty]
+        private double monthTotalProgress;
+
+        [ObservableProperty]
+        private ObservableCollection<MonthCategoryStat> categoryStats = new();
 
         [ObservableProperty]
         private ObservableCollection<string> holidays = new();
@@ -71,7 +97,6 @@ namespace PlannerApp.ViewModels
                 var daysInMonth = DateTime.DaysInMonth(Year, Month);
                 var lastDay = new DateTime(Year, Month, daysInMonth);
 
-                // Start grid on Monday
                 int startDow = (int)firstDay.DayOfWeek;
                 if (startDow == 0) startDow = 7;
                 var gridStart = firstDay.AddDays(-(startDow - 1));
@@ -88,6 +113,7 @@ namespace PlannerApp.ViewModels
                 var newCells = new ObservableCollection<MonthDayCell>();
                 int monthDone = 0, monthReq = 0;
                 var perDayProgress = new Dictionary<DateTime, double>();
+                int specialDaysCount = 0;
 
                 for (int i = 0; i < totalCells; i++)
                 {
@@ -99,28 +125,35 @@ namespace PlannerApp.ViewModels
                     double progress = 0;
                     bool hasData = false;
                     string dotColor = "#CBD5E1";
+                    bool isSpecialDay = false;
 
                     if (inMonth)
                     {
                         var log = monthLogs.FirstOrDefault(l => l.Date.Date == date.Date);
-                        var scheduleDay = DateHelper.GetScheduleDayType(date);
-                        var required = allBlocks.Where(b => b.DayType == scheduleDay && b.IsRequired).ToList();
-                        var dayCompletions = log is null ? new List<BlockCompletion>() :
-                            completions.Where(c => c.DayLogId == log.Id).ToList();
-                        var done = required.Count(b => dayCompletions.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done));
-                        progress = required.Count == 0 ? 0 : (double)done / required.Count;
-                        hasData = dayCompletions.Count > 0;
+                        isSpecialDay = log?.IsSpecialDay ?? false;
+                        if (isSpecialDay) specialDaysCount++;
 
-                        if (hasData)
+                        if (!isSpecialDay)
                         {
-                            if (progress > 0.75) dotColor = "#16A34A";
-                            else if (progress >= 0.5) dotColor = "#EAB308";
-                            else dotColor = "#DC2626";
-                        }
+                            var scheduleDay = DateHelper.GetScheduleDayType(date);
+                            var required = allBlocks.Where(b => b.DayType == scheduleDay && b.IsRequired).ToList();
+                            var dayCompletions = log is null ? new List<BlockCompletion>() :
+                                completions.Where(c => c.DayLogId == log.Id).ToList();
+                            var done = required.Count(b => dayCompletions.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done));
+                            progress = required.Count == 0 ? 0 : (double)done / required.Count;
+                            hasData = dayCompletions.Count > 0;
 
-                        monthDone += done;
-                        monthReq += required.Count;
-                        perDayProgress[date.Date] = hasData ? progress : -1;
+                            if (hasData)
+                            {
+                                if (progress > 0.75) dotColor = "#16A34A";
+                                else if (progress >= 0.5) dotColor = "#EAB308";
+                                else dotColor = "#DC2626";
+                            }
+
+                            monthDone += done;
+                            monthReq += required.Count;
+                            perDayProgress[date.Date] = hasData ? progress : -1;
+                        }
                     }
 
                     newCells.Add(new MonthDayCell
@@ -133,7 +166,9 @@ namespace PlannerApp.ViewModels
                         Progress = progress,
                         HasData = hasData,
                         DotColor = dotColor,
+                        IsSpecialDay = isSpecialDay,
                         CellBackground = !inMonth ? Color.FromArgb("#F1F5F9") :
+                            isSpecialDay ? Color.FromArgb("#FEF3C7") :
                             isTabor ? Color.FromArgb("#DBEAFE") :
                             holidayName is not null ? Color.FromArgb("#FEF3C7") :
                             Colors.Transparent
@@ -142,10 +177,13 @@ namespace PlannerApp.ViewModels
 
                 Cells = newCells;
 
-                var monthPercent = monthReq == 0 ? 0 : (int)Math.Round((double)monthDone / monthReq * 100);
-                SummaryLabel = $"Celkem: {monthDone} / {monthReq} ({monthPercent}%)";
+                var monthPercent = monthReq == 0 ? 0 : (double)monthDone / monthReq;
+                MonthTotalProgress = monthPercent;
+                SummaryLabel = $"Celkem: {monthDone} / {monthReq} ({(int)Math.Round(monthPercent * 100)}%)";
+                SpecialDaysLabel = specialDaysCount == 0 ? "Žádné speciální dny" :
+                    $"{specialDaysCount} {(specialDaysCount == 1 ? "den oznaèen" : specialDaysCount < 5 ? "dny oznaèeny" : "dní oznaèeno")} jako speciální";
 
-                // Streak: consecutive days up to today with progress > 0.75
+                // Streak (current)
                 int streak = 0;
                 var today = DateTime.Today;
                 for (var d = today; d.Month == Month && d.Year == Year; d = d.AddDays(-1))
@@ -155,9 +193,28 @@ namespace PlannerApp.ViewModels
                 }
                 StreakLabel = $"Aktuální série: {streak} dní";
 
-                // Best week
-                var weeksInMonth = monthLogs.GroupBy(l => DateHelper.GetIsoWeekNumber(l.Date)).ToList();
-                int bestWeek = 0; double bestPct = -1;
+                // Longest streak in month
+                int longest = 0, cur = 0;
+                for (int d = 1; d <= daysInMonth; d++)
+                {
+                    var date = new DateTime(Year, Month, d);
+                    var log = monthLogs.FirstOrDefault(l => l.Date.Date == date);
+                    if (log?.IsSpecialDay == true) { cur = 0; continue; }
+                    if (perDayProgress.TryGetValue(date, out var p2) && p2 > 0.75)
+                    {
+                        cur++;
+                        if (cur > longest) longest = cur;
+                    }
+                    else cur = 0;
+                }
+                LongestStreakLabel = $"Nejdelší série: {longest} dní";
+
+                // Best and worst week
+                var weeksInMonth = monthLogs
+                    .Where(l => !l.IsSpecialDay)
+                    .GroupBy(l => DateHelper.GetIsoWeekNumber(l.Date)).ToList();
+                int bestWeek = 0, worstWeek = 0;
+                double bestPct = -1, worstPct = 2;
                 foreach (var grp in weeksInMonth)
                 {
                     int wDone = 0, wReq = 0;
@@ -171,8 +228,41 @@ namespace PlannerApp.ViewModels
                     }
                     var pct = wReq == 0 ? 0 : (double)wDone / wReq;
                     if (pct > bestPct) { bestPct = pct; bestWeek = grp.Key; }
+                    if (pct < worstPct) { worstPct = pct; worstWeek = grp.Key; }
                 }
-                BestWeekLabel = bestWeek == 0 ? "Nejlepší týden: —" : $"Nejlepší týden: {bestWeek} ({(int)Math.Round(bestPct * 100)}%)";
+                BestWeekLabel = bestWeek == 0 ? "Nejlepší týden: –" : $"Nejlepší týden: {bestWeek} ({(int)Math.Round(bestPct * 100)}%)";
+                WorstWeekLabel = worstWeek == 0 ? "Nejslabší týden: –" : $"Nejslabší týden: {worstWeek} ({(int)Math.Round(worstPct * 100)}%)";
+
+                // Per-category stats
+                var catStats = new ObservableCollection<MonthCategoryStat>();
+                var requiredCategories = new[] { Category.DotNet, Category.Project, Category.Reading, Category.Running };
+                foreach (var cat in requiredCategories)
+                {
+                    int catDone = 0, catTotal = 0;
+                    var eligibleLogs = monthLogs.Where(l => !l.IsSpecialDay).ToList();
+                    foreach (var log in eligibleLogs)
+                    {
+                        var scheduleDay = DateHelper.GetScheduleDayType(log.Date);
+                        var required = allBlocks.Where(b => b.DayType == scheduleDay && b.IsRequired && b.Category == cat).ToList();
+                        if (required.Count == 0) continue;
+                        catTotal++;
+                        var dayCompletions = completions.Where(c => c.DayLogId == log.Id).ToList();
+                        if (required.Any(b => dayCompletions.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done)))
+                            catDone++;
+                    }
+                    if (catTotal == 0) continue;
+                    var catProgress = (double)catDone / catTotal;
+                    catStats.Add(new MonthCategoryStat
+                    {
+                        Name = WeekViewModel.GetCategoryCzech(cat),
+                        Done = catDone,
+                        Total = catTotal,
+                        Progress = catProgress,
+                        Label = $"{catDone} / {catTotal} dní  {(int)Math.Round(catProgress * 100)}%",
+                        Color = BlockViewModel.GetCategoryColor(cat)
+                    });
+                }
+                CategoryStats = catStats;
 
                 var hol = new ObservableCollection<string>();
                 foreach (var kv in CzechHolidayHelper.GetHolidaysInMonth(Year, Month))

@@ -12,7 +12,7 @@ namespace PlannerApp.ViewModels
         public int Month { get; set; }
         public int Year { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string PercentLabel { get; set; } = "—";
+        public string PercentLabel { get; set; } = "–";
         public Color Background { get; set; } = Color.FromArgb("#E2E8F0");
     }
 
@@ -21,6 +21,7 @@ namespace PlannerApp.ViewModels
         public string Name { get; set; } = string.Empty;
         public string Label { get; set; } = string.Empty;
         public string Color { get; set; } = "#7C3AED";
+        public double Progress { get; set; }
     }
 
     public partial class YearViewModel : BaseViewModel
@@ -54,6 +55,24 @@ namespace PlannerApp.ViewModels
         private string bestMonthLabel = string.Empty;
 
         [ObservableProperty]
+        private string worstMonthLabel = string.Empty;
+
+        [ObservableProperty]
+        private string yearTotalLabel = string.Empty;
+
+        [ObservableProperty]
+        private string totalBlocksLabel = string.Empty;
+
+        [ObservableProperty]
+        private string specialDaysLabel = string.Empty;
+
+        [ObservableProperty]
+        private string taborWeekendsLabel = string.Empty;
+
+        [ObservableProperty]
+        private double yearTotalProgress;
+
+        [ObservableProperty]
         private ObservableCollection<ActivityStat> activityStats = new();
 
         [RelayCommand]
@@ -71,27 +90,34 @@ namespace PlannerApp.ViewModels
 
                 var newTiles = new ObservableCollection<MonthTile>();
                 var today = DateTime.Today;
-                int bestMonth = 0; double bestPct = -1;
+                int bestMonth = 0, worstMonth = 0;
+                double bestPct = -1, worstPct = 2;
+                int yearTotalDone = 0, yearTotalReq = 0;
+                int specialDaysCount = yearLogs.Count(l => l.IsSpecialDay);
 
                 for (int m = 1; m <= 12; m++)
                 {
-                    var monthLogs = yearLogs.Where(l => l.Date.Month == m).ToList();
+                    var monthLogs = yearLogs.Where(l => l.Date.Month == m && !l.IsSpecialDay).ToList();
                     int done = 0, req = 0;
                     foreach (var log in monthLogs)
                     {
                         var scheduleDay = DateHelper.GetScheduleDayType(log.Date);
                         var required = allBlocks.Where(b => b.DayType == scheduleDay && b.IsRequired).ToList();
                         var dc = completions.Where(c => c.DayLogId == log.Id).ToList();
-                        done += required.Count(b => dc.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done));
+                        var d2 = required.Count(b => dc.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done));
+                        done += d2;
                         req += required.Count;
                     }
+
+                    yearTotalDone += done;
+                    yearTotalReq += req;
 
                     string percentLabel;
                     Color bg;
                     var future = new DateTime(Year, m, 1) > new DateTime(today.Year, today.Month, 1);
                     if (future || monthLogs.Count == 0 || req == 0)
                     {
-                        percentLabel = "—";
+                        percentLabel = "–";
                         bg = Color.FromArgb("#E2E8F0");
                     }
                     else
@@ -103,6 +129,7 @@ namespace PlannerApp.ViewModels
                         else bg = Color.FromArgb("#FCA5A5");
 
                         if (pct > bestPct) { bestPct = pct; bestMonth = m; }
+                        if (pct < worstPct) { worstPct = pct; worstMonth = m; }
                     }
 
                     newTiles.Add(new MonthTile
@@ -117,14 +144,33 @@ namespace PlannerApp.ViewModels
 
                 Tiles = newTiles;
 
-                DaysWithDataLabel = $"Dnù s daty: {yearLogs.Count(l => completions.Any(c => c.DayLogId == l.Id))} / {(DateTime.IsLeapYear(Year) ? 366 : 365)}";
-                BestMonthLabel = bestMonth == 0 ? "Nejlepší mìsíc: —" :
+                var ytPct = yearTotalReq == 0 ? 0 : (double)yearTotalDone / yearTotalReq;
+                YearTotalProgress = ytPct;
+                YearTotalLabel = $"Celková roèní úspìšnost: {(int)Math.Round(ytPct * 100)}%";
+                TotalBlocksLabel = $"Splnìno blokù: {yearTotalDone} / {yearTotalReq}";
+                BestMonthLabel = bestMonth == 0 ? "Nejlepší mìsíc: –" :
                     $"Nejlepší mìsíc: {DateHelper.FormatCzechMonthName(bestMonth)} ({(int)Math.Round(bestPct * 100)}%)";
+                WorstMonthLabel = worstMonth == 0 ? "Nejslabší mìsíc: –" :
+                    $"Nejslabší mìsíc: {DateHelper.FormatCzechMonthName(worstMonth)} ({(int)Math.Round(worstPct * 100)}%)";
 
-                // Longest streak across year (>75%)
+                var daysWithData = yearLogs.Count(l => !l.IsSpecialDay && completions.Any(c => c.DayLogId == l.Id));
+                DaysWithDataLabel = $"Dní s daty: {daysWithData} / {(DateTime.IsLeapYear(Year) ? 366 : 365)}";
+
+                SpecialDaysLabel = $"Speciálních dní: {specialDaysCount}";
+
+                // Count Tabor weekends in year
+                int taborWeekends = 0;
+                for (var d = new DateTime(Year, 1, 1); d.Year == Year; d = d.AddDays(1))
+                {
+                    if (TaborHelper.IsTaborFriday(d)) taborWeekends++;
+                }
+                TaborWeekendsLabel = $"Tábor víkendù: {taborWeekends}";
+
+                // Longest streak
                 int longest = 0, current = 0;
                 foreach (var log in yearLogs.OrderBy(l => l.Date))
                 {
+                    if (log.IsSpecialDay) { current = 0; continue; }
                     var scheduleDay = DateHelper.GetScheduleDayType(log.Date);
                     var required = allBlocks.Where(b => b.DayType == scheduleDay && b.IsRequired).ToList();
                     var dc = completions.Where(c => c.DayLogId == log.Id).ToList();
@@ -137,24 +183,27 @@ namespace PlannerApp.ViewModels
 
                 // Per required activity annual totals
                 var stats = new ObservableCollection<ActivityStat>();
-                var requiredCategories = allBlocks.Where(b => b.IsRequired).Select(b => b.Category).Distinct();
+                var requiredCategories = new[] { Category.DotNet, Category.Project, Category.Reading, Category.Running };
                 foreach (var cat in requiredCategories)
                 {
-                    int done = 0;
-                    foreach (var log in yearLogs)
+                    int catDone = 0, catTotal = 0;
+                    foreach (var log in yearLogs.Where(l => !l.IsSpecialDay))
                     {
                         var scheduleDay = DateHelper.GetScheduleDayType(log.Date);
                         var required = allBlocks.Where(b => b.DayType == scheduleDay && b.IsRequired && b.Category == cat).ToList();
                         if (required.Count == 0) continue;
+                        catTotal++;
                         var dc = completions.Where(c => c.DayLogId == log.Id).ToList();
                         if (required.Any(b => dc.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done)))
-                            done++;
+                            catDone++;
                     }
+                    var catPct = catTotal == 0 ? 0 : (double)catDone / catTotal;
                     stats.Add(new ActivityStat
                     {
                         Name = WeekViewModel.GetCategoryCzech(cat),
-                        Label = $"{done} dní",
-                        Color = BlockViewModel.GetCategoryColor(cat)
+                        Label = $"{catDone} / {catTotal} dní  {(int)Math.Round(catPct * 100)}%",
+                        Color = BlockViewModel.GetCategoryColor(cat),
+                        Progress = catPct
                     });
                 }
                 ActivityStats = stats;

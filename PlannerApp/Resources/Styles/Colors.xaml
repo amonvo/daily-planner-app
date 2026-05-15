@@ -32,6 +32,12 @@
     <Color x:Key="AccentYellow">#EAB308</Color>
     <Color x:Key="AccentGray">#6B7280</Color>
     <Color x:Key="AccentBlue">#1E40AF</Color>
+    <Color x:Key="AccentAmber">#F59E0B</Color>
+    <Color x:Key="SpecialDayBanner">#FEF3C7</Color>
+    <Color x:Key="SpecialDayBannerBorder">#F59E0B</Color>
+    <Color x:Key="WatermarkColor">#94A3B8</Color>
+    <Color x:Key="TextDark">#1E293B</Color>
+    <Color x:Key="TextLight">#FFFFFF</Color>
 
     <Color x:Key="Gray100">#E1E1E1</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>

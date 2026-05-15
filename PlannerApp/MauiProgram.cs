@@ -1,4 +1,4 @@
-ï»¿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Plugin.LocalNotification;
 using PlannerApp.Services;
@@ -22,9 +22,9 @@ namespace PlannerApp
                         android.AddChannel(new Plugin.LocalNotification.AndroidOption.NotificationChannelRequest
                         {
                             Id = NotificationService.ChannelId,
-                            Name = "PlannerApp pÅ™ipomenutÃ­",
+                            Name = "PlannerApp pøipomenutí",
                             Importance = Plugin.LocalNotification.AndroidOption.AndroidImportance.High,
-                            Description = "PÅ™ipomenutÃ­ aktivit z dennÃ­ho plÃ¡nu."
+                            Description = "Pøipomenutí aktivit z denního plánu."
                         });
                     });
                 })
@@ -46,13 +46,13 @@ namespace PlannerApp
             builder.Services.AddTransient<WeekPage>();
             builder.Services.AddTransient<MonthPage>();
             builder.Services.AddTransient<YearPage>();
+            builder.Services.AddTransient<AboutPage>();
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();
         }
     }
 }
-

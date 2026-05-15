@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
              x:Class="PlannerApp.Views.WeekPage"
              x:DataType="vm:WeekViewModel"
-             Title="Týden"
+             Title="Tyden"
              BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
 
     <ScrollView>
@@ -12,16 +12,16 @@
 
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <Button Grid.Column="0" Text="‹" Command="{Binding PrevWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                     <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
                         <Label Text="{Binding WeekLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" />
                         <Label Text="{Binding DateRangeLabel}" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
-                    <Button Grid.Column="2" Text="›" Command="{Binding NextWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                 </Grid>
             </Border>
 
-            <Label Text="Dny týdne" Style="{StaticResource H2}" />
+            <Label Text="Dny tydne" Style="{StaticResource H2}" />
             <CollectionView ItemsSource="{Binding Days}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:WeekDaySummary">
@@ -42,7 +42,7 @@
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Souhrn týdne" Style="{StaticResource H2}" />
+                    <Label Text="Souhrn tydne" Style="{StaticResource H2}" />
                     <Label Text="{Binding WeekTotalLabel}" Style="{StaticResource Body}" />
                     <CollectionView ItemsSource="{Binding Categories}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
@@ -58,6 +58,9 @@
                     </CollectionView>
                 </VerticalStackLayout>
             </Border>
+
+            <Label Text="amonvo" FontSize="10" TextColor="{StaticResource WatermarkColor}"
+                   HorizontalOptions="End" Opacity="0.6" Margin="0,0,8,4" />
 
         </VerticalStackLayout>
     </ScrollView>

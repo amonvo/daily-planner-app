@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
              x:Class="PlannerApp.Views.MonthPage"
              x:DataType="vm:MonthViewModel"
-             Title="Měsíc"
+             Title="Mesic"
              BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
 
     <ScrollView>
@@ -12,9 +12,9 @@
 
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <Button Grid.Column="0" Text="‹" Command="{Binding PrevMonthCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevMonthCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                     <Label Grid.Column="1" Text="{Binding MonthLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" VerticalOptions="Center" />
-                    <Button Grid.Column="2" Text="›" Command="{Binding NextMonthCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextMonthCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                 </Grid>
             </Border>
 
@@ -22,10 +22,10 @@
                 <VerticalStackLayout Spacing="6">
                     <Grid ColumnDefinitions="*,*,*,*,*,*,*">
                         <Label Grid.Column="0" Text="Po" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
-                        <Label Grid.Column="1" Text="Út" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="1" Text="Ut" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
                         <Label Grid.Column="2" Text="St" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
-                        <Label Grid.Column="3" Text="Čt" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
-                        <Label Grid.Column="4" Text="Pá" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="3" Text="Ct" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
+                        <Label Grid.Column="4" Text="Pa" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
                         <Label Grid.Column="5" Text="So" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
                         <Label Grid.Column="6" Text="Ne" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
                     </Grid>
@@ -41,6 +41,7 @@
                                                TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
                                         <BoxView HeightRequest="6" WidthRequest="6" CornerRadius="3" Color="{Binding DotColor}" HorizontalOptions="Start" IsVisible="{Binding HasData}" />
                                         <Label Text="{Binding HolidayName}" FontSize="9" TextColor="{StaticResource AccentRed}" LineBreakMode="TailTruncation" />
+                                        <Label Text="*" FontSize="9" TextColor="{StaticResource AccentAmber}" IsVisible="{Binding IsSpecialDay}" />
                                     </VerticalStackLayout>
                                 </Border>
                             </DataTemplate>
@@ -50,17 +51,39 @@
             </Border>
 
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Souhrn měsíce" Style="{StaticResource H2}" />
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Souhrn mesice" Style="{StaticResource H2}" />
+                    <ProgressBar Progress="{Binding MonthTotalProgress}" HeightRequest="10" />
                     <Label Text="{Binding SummaryLabel}" Style="{StaticResource Body}" />
-                    <Label Text="{Binding StreakLabel}" Style="{StaticResource Body}" />
                     <Label Text="{Binding BestWeekLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding WorstWeekLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding StreakLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding LongestStreakLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding SpecialDaysLabel}" Style="{StaticResource Muted}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Aktivity v mesici" Style="{StaticResource H2}" />
+                    <CollectionView ItemsSource="{Binding CategoryStats}" SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MonthCategoryStat">
+                                <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto" Margin="0,4">
+                                    <BoxView Grid.RowSpan="2" Grid.Column="0" Color="{Binding Color}" WidthRequest="6" />
+                                    <Label Grid.Column="1" Grid.Row="0" Text="{Binding Name}" Style="{StaticResource Body}" />
+                                    <Label Grid.Column="2" Grid.Row="0" Text="{Binding Label}" Style="{StaticResource Muted}" />
+                                    <ProgressBar Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Progress="{Binding Progress}" HeightRequest="6" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
                 </VerticalStackLayout>
             </Border>
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Svátky v tomto měsíci" Style="{StaticResource H2}" />
+                    <Label Text="Svatky v tomto mesici" Style="{StaticResource H2}" />
                     <CollectionView ItemsSource="{Binding Holidays}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="{x:Type x:String}">
@@ -70,6 +93,9 @@
                     </CollectionView>
                 </VerticalStackLayout>
             </Border>
+
+            <Label Text="amonvo" FontSize="10" TextColor="{StaticResource WatermarkColor}"
+                   HorizontalOptions="End" Opacity="0.6" Margin="0,0,8,4" />
 
         </VerticalStackLayout>
     </ScrollView>

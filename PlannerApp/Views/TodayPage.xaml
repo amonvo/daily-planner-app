@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
@@ -21,8 +21,28 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Special day banner -->
+            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                    Stroke="{StaticResource SpecialDayBannerBorder}"
+                    BackgroundColor="{StaticResource SpecialDayBanner}"
+                    Padding="14,10"
+                    IsVisible="{Binding IsSpecialDay}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0"
+                           Text="{Binding SpecialDayLabel, StringFormat='{0} - tento den se nezapocitava do statistik'}"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="{StaticResource TextDark}"
+                           VerticalOptions="Center" />
+                    <Button Grid.Column="1"
+                            Text="Zrusit"
+                            Style="{StaticResource ResetButton}"
+                            HeightRequest="32" FontSize="12" Padding="8,0"
+                            Command="{Binding ClearSpecialDayCommand}" />
+                </Grid>
+            </Border>
+
             <!-- Progress -->
-            <Border Style="{StaticResource Card}">
+            <Border Style="{StaticResource Card}" IsVisible="{Binding IsSpecialDay, Converter={x:StaticResource InvertedBoolConverter}}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Pokrok dne" Style="{StaticResource H2}" />
                     <ProgressBar Progress="{Binding ProgressPercent}" HeightRequest="10" />
@@ -35,7 +55,7 @@
                 <Grid ColumnDefinitions="6,*" ColumnSpacing="12">
                     <BoxView Grid.Column="0" Color="{Binding CurrentBlockColor}" WidthRequest="6" />
                     <VerticalStackLayout Grid.Column="1" Spacing="4">
-                        <Label Text="Aktuální aktivita" Style="{StaticResource Muted}" />
+                        <Label Text="Aktualni aktivita" Style="{StaticResource Muted}" />
                         <Label Text="{Binding CurrentBlockName}" Style="{StaticResource H2}" />
                         <Label Text="{Binding CurrentBlockTime}" Style="{StaticResource Body}" />
                     </VerticalStackLayout>
@@ -48,7 +68,7 @@
             </Border>
 
             <!-- Blocks list -->
-            <Label Text="Plán dne" Style="{StaticResource H2}" />
+            <Label Text="Plan dne" Style="{StaticResource H2}" />
             <CollectionView ItemsSource="{Binding Blocks}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:BlockViewModel">
@@ -57,35 +77,31 @@
                                 <BoxView Grid.RowSpan="2" Grid.Column="0" Color="{Binding CategoryColor}" WidthRequest="6" />
 
                                 <VerticalStackLayout Grid.Column="1" Grid.Row="0" Spacing="2">
-                                    <Label Text="{Binding TimeLabel}" Style="{StaticResource Muted}" />
-                                    <Label Text="{Binding ActivityName}" Style="{StaticResource H2}" />
+                                    <Label Text="{Binding TimeLabel}" FontSize="12" TextColor="{Binding TextColor}" />
+                                    <Label Text="{Binding ActivityName}" FontSize="16" FontAttributes="Bold" TextColor="{Binding TextColor}" />
                                 </VerticalStackLayout>
 
-                                <!-- Status indicator -->
                                 <Label Grid.Column="2" Grid.Row="0"
-                                       Text="?"
-                                       FontSize="22"
-                                       FontAttributes="Bold"
+                                       Text="&#x2713;"
+                                       FontSize="22" FontAttributes="Bold"
                                        TextColor="{StaticResource AccentGreen}"
                                        VerticalOptions="Center"
                                        IsVisible="{Binding IsCompleted}" />
                                 <Label Grid.Column="2" Grid.Row="0"
-                                       Text="—"
-                                       FontSize="22"
-                                       FontAttributes="Bold"
+                                       Text="&#x2014;"
+                                       FontSize="22" FontAttributes="Bold"
                                        TextColor="{StaticResource AccentGray}"
                                        VerticalOptions="Center"
                                        IsVisible="{Binding IsSkipped}" />
 
-                                <!-- Buttons row -->
                                 <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"
                                                        Spacing="6" Margin="0,8,0,0"
                                                        IsVisible="{Binding IsNotDone}">
-                                    <Button Text="Splněno"
+                                    <Button Text="Splneno"
                                             Style="{StaticResource DoneButton}"
                                             Command="{Binding BindingContext.MarkDoneCommand, Source={x:Reference TodayRoot}}"
                                             CommandParameter="{Binding}" />
-                                    <Button Text="Přeskočit"
+                                    <Button Text="Preskocit"
                                             Style="{StaticResource SkipButton}"
                                             Command="{Binding BindingContext.MarkSkippedCommand, Source={x:Reference TodayRoot}}"
                                             CommandParameter="{Binding}" />
@@ -118,10 +134,26 @@
             <!-- Notes -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Poznámky" Style="{StaticResource H2}" />
-                    <Editor Text="{Binding Notes, Mode=TwoWay}" AutoSize="TextChanges" HeightRequest="100" Placeholder="Tvoje poznámky k dnešnímu dni..." />
+                    <Label Text="Poznamky" Style="{StaticResource H2}" />
+                    <Editor Text="{Binding Notes, Mode=TwoWay}" AutoSize="TextChanges" HeightRequest="100" Placeholder="Tvoje poznamky k dnesnimu dni..." />
                 </VerticalStackLayout>
             </Border>
+
+            <!-- Special day toggle -->
+            <Button Text="Oznacit jako specialni den"
+                    Style="{StaticResource ResetButton}"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding IsSpecialDay, Converter={x:StaticResource InvertedBoolConverter}}"
+                    Command="{Binding ToggleSpecialDayCommand}" />
+            <Button Text="Zrusit specialni den"
+                    Style="{StaticResource ResetButton}"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding IsSpecialDay}"
+                    Command="{Binding ClearSpecialDayCommand}" />
+
+            <!-- Watermark -->
+            <Label Text="amonvo" FontSize="10" TextColor="{StaticResource WatermarkColor}"
+                   HorizontalOptions="End" Opacity="0.6" Margin="0,0,8,4" />
 
         </VerticalStackLayout>
     </ScrollView>

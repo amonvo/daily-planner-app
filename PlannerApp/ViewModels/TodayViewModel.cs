@@ -48,7 +48,7 @@ namespace PlannerApp.ViewModels
         private string progressLabel = "0 / 0 splnìno (0%)";
 
         [ObservableProperty]
-        private string currentBlockName = "—";
+        private string currentBlockName = "–";
 
         [ObservableProperty]
         private string currentBlockTime = string.Empty;
@@ -57,13 +57,19 @@ namespace PlannerApp.ViewModels
         private string currentBlockColor = "#7C3AED";
 
         [ObservableProperty]
-        private string nextBlockName = "—";
+        private string nextBlockName = "–";
 
         [ObservableProperty]
         private string nextBlockInfo = string.Empty;
 
         [ObservableProperty]
         private string notes = string.Empty;
+
+        [ObservableProperty]
+        private bool isSpecialDay;
+
+        [ObservableProperty]
+        private string specialDayLabel = string.Empty;
 
         public DateTime SelectedDate
         {
@@ -97,6 +103,9 @@ namespace PlannerApp.ViewModels
                     DayType.Tabor => "#0891B2",
                     _ => "#7C3AED"
                 };
+
+                IsSpecialDay = _currentDayLog.IsSpecialDay;
+                SpecialDayLabel = _currentDayLog.SpecialDayLabel ?? string.Empty;
 
                 var scheduleBlocks = await _db.GetScheduleBlocksForDateAsync(_selectedDate);
                 var completions = await _db.GetCompletionsForDayAsync(_currentDayLog.Id);
@@ -135,12 +144,19 @@ namespace PlannerApp.ViewModels
         {
             if (from <= to)
                 return now >= from && now < to;
-            // wraps midnight
             return now >= from || now < to;
         }
 
         private void UpdateStats()
         {
+            if (IsSpecialDay)
+            {
+                TotalRequired = 0;
+                DoneCount = 0;
+                ProgressPercent = 0;
+                ProgressLabel = "Speciální den – nezapoèítává se.";
+                return;
+            }
             TotalRequired = Blocks.Count(b => b.IsRequired);
             DoneCount = Blocks.Count(b => b.IsRequired && b.IsCompleted);
             ProgressPercent = TotalRequired == 0 ? 0 : (double)DoneCount / TotalRequired;
@@ -159,7 +175,7 @@ namespace PlannerApp.ViewModels
             }
             else
             {
-                CurrentBlockName = "—";
+                CurrentBlockName = "–";
                 CurrentBlockTime = string.Empty;
                 CurrentBlockColor = "#64748B";
             }
@@ -176,7 +192,7 @@ namespace PlannerApp.ViewModels
             }
             else
             {
-                NextBlockName = "—";
+                NextBlockName = "–";
                 NextBlockInfo = "Žádná další aktivita dnes.";
             }
         }
@@ -263,6 +279,51 @@ namespace PlannerApp.ViewModels
                 Status = CompletionStatus.NotDone,
                 CompletedAt = null
             });
+            UpdateStats();
+        }
+
+        [RelayCommand]
+        private async Task ToggleSpecialDayAsync()
+        {
+            if (_currentDayLog is null) return;
+            if (IsSpecialDay)
+            {
+                await ClearSpecialDayAsync();
+                return;
+            }
+
+            var page = Application.Current?.MainPage;
+            if (page is null) return;
+
+            var options = new[] { "Festival", "Nemoc", "Dovolená", "Jiné…" };
+            var result = await page.DisplayActionSheet("Oznaèit jako speciální den", "Zrušit", null, options);
+            if (result is null || result == "Zrušit") return;
+
+            string label = result;
+            if (result == "Jiné…")
+            {
+                var custom = await page.DisplayPromptAsync("Speciální den", "Zadej název:", "OK", "Zrušit", "Napø. Výlet");
+                if (string.IsNullOrWhiteSpace(custom)) return;
+                label = custom.Trim();
+            }
+
+            _currentDayLog.IsSpecialDay = true;
+            _currentDayLog.SpecialDayLabel = label;
+            await _db.UpdateDayLogAsync(_currentDayLog);
+            IsSpecialDay = true;
+            SpecialDayLabel = label;
+            UpdateStats();
+        }
+
+        [RelayCommand]
+        private async Task ClearSpecialDayAsync()
+        {
+            if (_currentDayLog is null) return;
+            _currentDayLog.IsSpecialDay = false;
+            _currentDayLog.SpecialDayLabel = null;
+            await _db.UpdateDayLogAsync(_currentDayLog);
+            IsSpecialDay = false;
+            SpecialDayLabel = string.Empty;
             UpdateStats();
         }
 

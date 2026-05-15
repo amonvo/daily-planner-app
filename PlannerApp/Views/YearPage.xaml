@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
@@ -12,9 +12,9 @@
 
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <Button Grid.Column="0" Text="‹" Command="{Binding PrevYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                     <Label Grid.Column="1" Text="{Binding YearLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" VerticalOptions="Center" />
-                    <Button Grid.Column="2" Text="›" Command="{Binding NextYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                 </Grid>
             </Border>
 
@@ -26,8 +26,8 @@
                     <DataTemplate x:DataType="vm:MonthTile">
                         <Border BackgroundColor="{Binding Background}" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="12" HeightRequest="96">
                             <VerticalStackLayout Spacing="4" VerticalOptions="Center">
-                                <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="14" TextColor="#1E293B" HorizontalTextAlignment="Center" />
-                                <Label Text="{Binding PercentLabel}" FontSize="20" FontAttributes="Bold" TextColor="#1E293B" HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="14" TextColor="{StaticResource TextDark}" HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding PercentLabel}" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource TextDark}" HorizontalTextAlignment="Center" />
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>
@@ -35,11 +35,17 @@
             </CollectionView>
 
             <Border Style="{StaticResource Card}">
-                <VerticalStackLayout Spacing="6">
-                    <Label Text="Roční statistiky" Style="{StaticResource H2}" />
-                    <Label Text="{Binding DaysWithDataLabel}" Style="{StaticResource Body}" />
-                    <Label Text="{Binding LongestStreakLabel}" Style="{StaticResource Body}" />
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Rocni souhrn" Style="{StaticResource H2}" />
+                    <ProgressBar Progress="{Binding YearTotalProgress}" HeightRequest="12" />
+                    <Label Text="{Binding YearTotalLabel}" Style="{StaticResource Body}" FontAttributes="Bold" />
+                    <Label Text="{Binding TotalBlocksLabel}" Style="{StaticResource Body}" />
                     <Label Text="{Binding BestMonthLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding WorstMonthLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding LongestStreakLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding DaysWithDataLabel}" Style="{StaticResource Body}" />
+                    <Label Text="{Binding SpecialDaysLabel}" Style="{StaticResource Muted}" />
+                    <Label Text="{Binding TaborWeekendsLabel}" Style="{StaticResource Muted}" />
                 </VerticalStackLayout>
             </Border>
 
@@ -49,16 +55,20 @@
                     <CollectionView ItemsSource="{Binding ActivityStats}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="vm:ActivityStat">
-                                <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="10" Margin="0,4">
-                                    <BoxView Grid.Column="0" Color="{Binding Color}" WidthRequest="6" />
-                                    <Label Grid.Column="1" Text="{Binding Name}" Style="{StaticResource Body}" />
-                                    <Label Grid.Column="2" Text="{Binding Label}" Style="{StaticResource Muted}" />
+                                <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="10" RowDefinitions="Auto,Auto" Margin="0,4">
+                                    <BoxView Grid.RowSpan="2" Grid.Column="0" Color="{Binding Color}" WidthRequest="6" />
+                                    <Label Grid.Column="1" Grid.Row="0" Text="{Binding Name}" Style="{StaticResource Body}" />
+                                    <Label Grid.Column="2" Grid.Row="0" Text="{Binding Label}" Style="{StaticResource Muted}" />
+                                    <ProgressBar Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" Progress="{Binding Progress}" HeightRequest="6" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
             </Border>
+
+            <Label Text="amonvo" FontSize="10" TextColor="{StaticResource WatermarkColor}"
+                   HorizontalOptions="End" Opacity="0.6" Margin="0,0,8,4" />
 
         </VerticalStackLayout>
     </ScrollView>

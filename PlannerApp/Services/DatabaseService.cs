@@ -10,6 +10,9 @@ namespace PlannerApp.Services
         private readonly SemaphoreSlim _initLock = new(1, 1);
         private bool _initialized;
 
+        private const string DbVersionKey = "db_version";
+        private const int CurrentDbVersion = 2;
+
         public string DatabasePath =>
             Path.Combine(FileSystem.AppDataDirectory, "plannerapp.db3");
 
@@ -24,12 +27,42 @@ namespace PlannerApp.Services
                 await _database.CreateTableAsync<ScheduleBlock>().ConfigureAwait(false);
                 await _database.CreateTableAsync<DayLog>().ConfigureAwait(false);
                 await _database.CreateTableAsync<BlockCompletion>().ConfigureAwait(false);
+
+                var storedVersion = Preferences.Default.Get(DbVersionKey, 0);
+                if (storedVersion < CurrentDbVersion)
+                {
+                    await MigrateAsync(storedVersion).ConfigureAwait(false);
+                }
+
                 await SeedScheduleBlocksAsync().ConfigureAwait(false);
                 _initialized = true;
             }
             finally
             {
                 _initLock.Release();
+            }
+        }
+
+        private async Task MigrateAsync(int fromVersion)
+        {
+            if (_database is null) return;
+            try
+            {
+                if (fromVersion < 2)
+                {
+                    // Add new columns to DayLog if they don't exist yet
+                    try { await _database.ExecuteAsync("ALTER TABLE DayLog ADD COLUMN IsSpecialDay INTEGER NOT NULL DEFAULT 0").ConfigureAwait(false); } catch { }
+                    try { await _database.ExecuteAsync("ALTER TABLE DayLog ADD COLUMN SpecialDayLabel TEXT").ConfigureAwait(false); } catch { }
+
+                    // Remove old all-day Tabor seed blocks
+                    await _database.ExecuteAsync("DELETE FROM ScheduleBlock WHERE DayType = 3").ConfigureAwait(false);
+                }
+
+                Preferences.Default.Set(DbVersionKey, CurrentDbVersion);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"MigrateAsync error: {ex}");
             }
         }
 
@@ -41,7 +74,9 @@ namespace PlannerApp.Services
         private async Task SeedScheduleBlocksAsync()
         {
             if (_database is null) return;
-            var count = await _database.Table<ScheduleBlock>().CountAsync().ConfigureAwait(false);
+            var count = await _database.Table<ScheduleBlock>()
+                .Where(b => b.DayType == DayType.Workday || b.DayType == DayType.Weekend)
+                .CountAsync().ConfigureAwait(false);
             if (count > 0) return;
 
             var seed = new List<ScheduleBlock>
@@ -55,7 +90,7 @@ namespace PlannerApp.Services
                 Make(DayType.Workday, "16:00", "16:30", "Cesta domù", Category.Commute, false, "Cesta domù – dekomprese, podcast."),
                 Make(DayType.Workday, "16:30", "17:00", "Veèeøe a pauza", Category.Routine, false, "Veèeøe – žádná obrazovka, odpoèinek."),
                 Make(DayType.Workday, "17:00", "18:30", ".NET studium", Category.DotNet, true, "Teï máš .NET studium – otevøi projekt a kóduj."),
-                Make(DayType.Workday, "18:30", "19:15", "Vedlejší projekt", Category.Project, true, "Èas na vedlejší projekt – LearKPI nebo domovsnadno."),
+                Make(DayType.Workday, "18:30", "19:15", "Vedlejší projekt", Category.Project, true, "Èas na vedlejší projekt."),
                 Make(DayType.Workday, "19:15", "19:45", "Ètení", Category.Reading, true, "Ètení – fyzická kniha, žádný telefon."),
                 Make(DayType.Workday, "19:45", "20:30", "Volný èas", Category.FreeTime, false, "Volný èas – YouTube, zprávy, brainstorming."),
                 Make(DayType.Workday, "20:30", "21:00", "Pøíprava na zítøek", Category.Routine, false, "Wind-down – pøiprav vìci na zítøek."),
@@ -66,13 +101,10 @@ namespace PlannerApp.Services
                 Make(DayType.Weekend, "09:00", "11:00", ".NET nebo projekt", Category.DotNet, true, "Hlavní blok – .NET studium nebo vedlejší projekt."),
                 Make(DayType.Weekend, "11:00", "12:00", "Bìžící pás", Category.Running, true, "Cvièení – delší trénink na bìžícím pásu."),
                 Make(DayType.Weekend, "12:00", "14:00", "Obìd a volno", Category.FreeTime, false, "Obìd, pochùzky, odpoèinek."),
-                Make(DayType.Weekend, "14:00", "15:30", "Projekt nebo tech", Category.Project, true, "Projekt nebo nová technologie – Docker, Angular, Python."),
+                Make(DayType.Weekend, "14:00", "15:30", "Projekt nebo tech", Category.Project, true, "Projekt nebo nová technologie."),
                 Make(DayType.Weekend, "15:30", "16:30", "Ètení", Category.Reading, true, "Ètení – hodina soustøedìného ètení."),
                 Make(DayType.Weekend, "16:30", "22:00", "Volný èas", Category.FreeTime, false, "Volný èas – sociální aktivity, seriál, odpoèinek."),
                 Make(DayType.Weekend, "22:00", "07:30", "Spánek", Category.Sleep, false, "Èas spát."),
-
-                // Tabor
-                Make(DayType.Tabor, "00:00", "23:59", "Tábor – volno s pøítelkyní", Category.FreeTime, false, "Tábor víkend – volno, žádný plán."),
             };
 
             foreach (var b in seed)
@@ -89,6 +121,82 @@ namespace PlannerApp.Services
                 Category = cat,
                 IsRequired = req,
                 NotificationMessage = msg
+            };
+
+        private static List<ScheduleBlock> BuildTaborFridayBlocks(List<ScheduleBlock> workdayBlocks)
+        {
+            // Use workday blocks up to and including 16:30-17:00 (Veèeøe a pauza), then add Tabor travel block
+            var result = workdayBlocks
+                .Where(b => b.TimeFrom < TimeSpan.FromHours(19))
+                .Select(b => new ScheduleBlock
+                {
+                    Id = b.Id,
+                    DayType = DayType.Tabor,
+                    TimeFrom = b.TimeFrom,
+                    TimeTo = b.TimeTo,
+                    ActivityName = b.ActivityName,
+                    Category = b.Category,
+                    IsRequired = b.IsRequired,
+                    NotificationMessage = b.NotificationMessage
+                })
+                .ToList();
+
+            result.Add(new ScheduleBlock
+            {
+                Id = -1,
+                DayType = DayType.Tabor,
+                TimeFrom = TimeSpan.FromHours(19),
+                TimeTo = new TimeSpan(23, 59, 0),
+                ActivityName = "Cesta do Tábora – volno",
+                Category = Category.FreeTime,
+                IsRequired = false,
+                NotificationMessage = "Jedeš do Tábora."
+            });
+
+            return result;
+        }
+
+        private static List<ScheduleBlock> BuildTaborSaturdayBlocks() =>
+            new()
+            {
+                new ScheduleBlock
+                {
+                    Id = -2,
+                    DayType = DayType.Tabor,
+                    TimeFrom = TimeSpan.Zero,
+                    TimeTo = new TimeSpan(23, 59, 0),
+                    ActivityName = "Tábor – volný den",
+                    Category = Category.FreeTime,
+                    IsRequired = false,
+                    NotificationMessage = "Tábor víkend – volno."
+                }
+            };
+
+        private static List<ScheduleBlock> BuildTaborSundayBlocks() =>
+            new()
+            {
+                new ScheduleBlock
+                {
+                    Id = -3,
+                    DayType = DayType.Tabor,
+                    TimeFrom = TimeSpan.Zero,
+                    TimeTo = TimeSpan.FromHours(19),
+                    ActivityName = "Tábor – volný den",
+                    Category = Category.FreeTime,
+                    IsRequired = false,
+                    NotificationMessage = "Tábor víkend – volno."
+                },
+                new ScheduleBlock
+                {
+                    Id = -4,
+                    DayType = DayType.Tabor,
+                    TimeFrom = TimeSpan.FromHours(19),
+                    TimeTo = new TimeSpan(23, 59, 0),
+                    ActivityName = "Cesta zpìt do Plznì",
+                    Category = Category.Commute,
+                    IsRequired = false,
+                    NotificationMessage = "Cesta zpìt domù do Plznì."
+                }
             };
 
         public async Task<DayLog> GetOrCreateDayLogAsync(DateTime date)
@@ -135,9 +243,26 @@ namespace PlannerApp.Services
         public async Task<List<ScheduleBlock>> GetScheduleBlocksForDateAsync(DateTime date)
         {
             await EnsureInitializedAsync().ConfigureAwait(false);
-            var scheduleDay = DateHelper.GetScheduleDayType(date);
+            date = date.Date;
+
             try
             {
+                if (TaborHelper.IsTaborFriday(date))
+                {
+                    var workdayBlocks = await _database!.Table<ScheduleBlock>()
+                        .Where(b => b.DayType == DayType.Workday)
+                        .OrderBy(b => b.TimeFrom)
+                        .ToListAsync().ConfigureAwait(false);
+                    return BuildTaborFridayBlocks(workdayBlocks);
+                }
+
+                if (TaborHelper.IsTaborSaturday(date))
+                    return BuildTaborSaturdayBlocks();
+
+                if (TaborHelper.IsTaborSunday(date))
+                    return BuildTaborSundayBlocks();
+
+                var scheduleDay = DateHelper.GetScheduleDayType(date);
                 return await _database!.Table<ScheduleBlock>()
                     .Where(b => b.DayType == scheduleDay)
                     .OrderBy(b => b.TimeFrom)

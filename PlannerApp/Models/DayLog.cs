@@ -15,5 +15,9 @@ namespace PlannerApp.Models
         public string? HolidayName { get; set; }
 
         public string? Notes { get; set; }
+
+        public bool IsSpecialDay { get; set; } = false;
+
+        public string? SpecialDayLabel { get; set; }
     }
 }

@@ -18,6 +18,8 @@ namespace PlannerApp.ViewModels
         public int Required { get; set; }
         public double Progress { get; set; }
         public string PercentLabel { get; set; } = "0%";
+        public bool IsSpecialDay { get; set; }
+        public string SpecialDayLabel { get; set; } = string.Empty;
     }
 
     public partial class CategorySummary : ObservableObject
@@ -95,6 +97,25 @@ namespace PlannerApp.ViewModels
 
                 foreach (var log in weekDayLogs)
                 {
+                    if (log.IsSpecialDay)
+                    {
+                        newDays.Add(new WeekDaySummary
+                        {
+                            Date = log.Date,
+                            DayName = DateHelper.FormatCzechDayName(log.Date),
+                            DateLabel = log.Date.ToString("d. M."),
+                            DayTypeLabel = DateHelper.GetDayTypeLabel(log.DayType),
+                            DayTypeColor = "#F59E0B",
+                            Done = 0,
+                            Required = 0,
+                            Progress = 0,
+                            PercentLabel = "–",
+                            IsSpecialDay = true,
+                            SpecialDayLabel = log.SpecialDayLabel ?? string.Empty
+                        });
+                        continue;
+                    }
+
                     var scheduleDay = DateHelper.GetScheduleDayType(log.Date);
                     var blocks = allBlocks.Where(b => b.DayType == scheduleDay).ToList();
                     var required = blocks.Where(b => b.IsRequired).ToList();
@@ -141,14 +162,13 @@ namespace PlannerApp.ViewModels
                 foreach (var kv in perCategory.OrderBy(k => k.Key))
                 {
                     var progress = kv.Value.total == 0 ? 0 : (double)kv.Value.done / kv.Value.total;
-                    var bars = (int)Math.Round(progress * 12);
                     newCats.Add(new CategorySummary
                     {
                         Name = GetCategoryCzech(kv.Key),
                         Done = kv.Value.done,
                         Total = kv.Value.total,
                         Progress = progress,
-                        Bar = new string('?', bars) + new string('?', 12 - bars),
+                        Bar = string.Empty,
                         Label = $"{kv.Value.done}/{kv.Value.total}  {(int)Math.Round(progress * 100)}%",
                         Color = BlockViewModel.GetCategoryColor(kv.Key)
                     });

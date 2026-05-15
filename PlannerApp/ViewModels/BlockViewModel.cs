@@ -44,6 +44,21 @@ namespace PlannerApp.ViewModels
             }
         }
 
+        /// <summary>
+        /// Returns dark text for light backgrounds, white for dark/saturated backgrounds.
+        /// </summary>
+        public Color TextColor
+        {
+            get
+            {
+                var bg = BackgroundColor;
+                if (bg == Colors.Transparent) return Color.FromArgb("#1E293B");
+                // Light backgrounds: completed (light green), current (light yellow), skipped (light gray)
+                // All of these are light — use dark text
+                return Color.FromArgb("#1E293B");
+            }
+        }
+
         public static string GetCategoryColor(Category category) => category switch
         {
             Category.DotNet => "#7C3AED",
@@ -64,11 +79,13 @@ namespace PlannerApp.ViewModels
             OnPropertyChanged(nameof(IsSkipped));
             OnPropertyChanged(nameof(IsNotDone));
             OnPropertyChanged(nameof(BackgroundColor));
+            OnPropertyChanged(nameof(TextColor));
         }
 
         partial void OnIsCurrentBlockChanged(bool value)
         {
             OnPropertyChanged(nameof(BackgroundColor));
+            OnPropertyChanged(nameof(TextColor));
         }
     }
 }

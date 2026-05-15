@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:PlannerApp.Views"
-    Title="PlannerApp"
+    Title="PlannerApp · amonvo"
     FlyoutBehavior="Disabled">
 
     <TabBar>
@@ -12,7 +12,9 @@
         <ShellContent Title="Týden" Route="week" ContentTemplate="{DataTemplate views:WeekPage}" />
         <ShellContent Title="Měsíc" Route="month" ContentTemplate="{DataTemplate views:MonthPage}" />
         <ShellContent Title="Rok" Route="year" ContentTemplate="{DataTemplate views:YearPage}" />
+        <ShellContent Title="O aplikaci" Route="about" ContentTemplate="{DataTemplate views:AboutPage}" />
     </TabBar>
 
 </Shell>
+
 
