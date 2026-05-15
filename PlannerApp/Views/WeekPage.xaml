@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
              x:Class="PlannerApp.Views.WeekPage"
+             x:Name="WeekRoot"
              x:DataType="vm:WeekViewModel"
              Title="Tyden"
              BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
@@ -26,6 +27,11 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:WeekDaySummary">
                         <Border Style="{StaticResource Card}" Margin="0,0,0,8">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding BindingContext.NavigateToDayCommand, Source={x:Reference WeekRoot}}"
+                                    CommandParameter="{Binding}" />
+                            </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="4">
                                 <Label Grid.Column="0" Grid.Row="0" Text="{Binding DayName}" Style="{StaticResource H2}" />
                                 <Label Grid.Column="1" Grid.Row="0" Text="{Binding DateLabel}" Style="{StaticResource Muted}" />

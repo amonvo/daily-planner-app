@@ -2,23 +2,44 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
-             x:Class="PlannerApp.Views.TodayPage"
-             x:Name="TodayRoot"
-             x:DataType="vm:TodayViewModel"
-             Title="Dnes"
+             x:Class="PlannerApp.Views.DayDetailPage"
+             x:Name="DayDetailRoot"
+             x:DataType="vm:DayDetailViewModel"
+             Title="Detail dne"
              BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
 
-            <!-- Header card -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="{Binding TodayDate}" Style="{StaticResource H1}" />
+                    <Label Text="{Binding DateLabel}" Style="{StaticResource H1}" />
                     <Border Style="{StaticResource Badge}" BackgroundColor="{Binding DayTypeBadgeColor}">
                         <Label Text="{Binding DayTypeLabel}" Style="{StaticResource BadgeLabel}" />
                     </Border>
                 </VerticalStackLayout>
+            </Border>
+
+            <!-- Past day banner -->
+            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                    Stroke="{StaticResource SpecialDayBannerBorder}"
+                    BackgroundColor="{StaticResource SpecialDayBanner}"
+                    Padding="14,10"
+                    IsVisible="{Binding IsPastDay}">
+                <Label Text="Zpetne doplneni dat pro tento den"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="{StaticResource TextDark}" />
+            </Border>
+
+            <!-- Future day banner -->
+            <Border StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                    Stroke="{StaticResource AccentRed}"
+                    BackgroundColor="{StaticResource SpecialDayBanner}"
+                    Padding="14,10"
+                    IsVisible="{Binding IsFutureDay}">
+                <Label Text="Tento den jeste nenastal - data nelze vyplnovat"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="{StaticResource TextDark}" />
             </Border>
 
             <!-- Special day banner -->
@@ -37,6 +58,7 @@
                             Text="Zrusit"
                             Style="{StaticResource ResetButton}"
                             HeightRequest="32" FontSize="12" Padding="8,0"
+                            IsEnabled="{Binding CanEdit}"
                             Command="{Binding ClearSpecialDayCommand}" />
                 </Grid>
             </Border>
@@ -50,8 +72,8 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- Current block -->
-            <Border Style="{StaticResource Card}">
+            <!-- Current block (only visible if today) -->
+            <Border Style="{StaticResource Card}" IsVisible="{Binding IsToday}">
                 <Grid ColumnDefinitions="6,*" ColumnSpacing="12">
                     <BoxView Grid.Column="0" Color="{Binding CurrentBlockColor}" WidthRequest="6" />
                     <VerticalStackLayout Grid.Column="1" Spacing="4">
@@ -62,12 +84,10 @@
                 </Grid>
             </Border>
 
-            <!-- Next block -->
-            <Border Style="{StaticResource Card}" Padding="12">
+            <Border Style="{StaticResource Card}" Padding="12" IsVisible="{Binding IsToday}">
                 <Label Text="{Binding NextBlockInfo}" Style="{StaticResource Body}" />
             </Border>
 
-            <!-- Blocks list -->
             <Label Text="Plan dne" Style="{StaticResource H2}" />
             <CollectionView ItemsSource="{Binding Blocks}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
@@ -99,11 +119,13 @@
                                                        IsVisible="{Binding IsNotDone}">
                                     <Button Text="Splneno"
                                             Style="{StaticResource DoneButton}"
-                                            Command="{Binding BindingContext.MarkDoneCommand, Source={x:Reference TodayRoot}}"
+                                            IsEnabled="{Binding BindingContext.CanEdit, Source={x:Reference DayDetailRoot}}"
+                                            Command="{Binding BindingContext.MarkDoneCommand, Source={x:Reference DayDetailRoot}}"
                                             CommandParameter="{Binding}" />
                                     <Button Text="Preskocit"
                                             Style="{StaticResource SkipButton}"
-                                            Command="{Binding BindingContext.MarkSkippedCommand, Source={x:Reference TodayRoot}}"
+                                            IsEnabled="{Binding BindingContext.CanEdit, Source={x:Reference DayDetailRoot}}"
+                                            Command="{Binding BindingContext.MarkSkippedCommand, Source={x:Reference DayDetailRoot}}"
                                             CommandParameter="{Binding}" />
                                 </HorizontalStackLayout>
 
@@ -112,7 +134,8 @@
                                                        IsVisible="{Binding IsCompleted}">
                                     <Button Text="Reset"
                                             Style="{StaticResource ResetButton}"
-                                            Command="{Binding BindingContext.ResetBlockCommand, Source={x:Reference TodayRoot}}"
+                                            IsEnabled="{Binding BindingContext.CanEdit, Source={x:Reference DayDetailRoot}}"
+                                            Command="{Binding BindingContext.ResetBlockCommand, Source={x:Reference DayDetailRoot}}"
                                             CommandParameter="{Binding}" />
                                 </HorizontalStackLayout>
 
@@ -121,7 +144,8 @@
                                                        IsVisible="{Binding IsSkipped}">
                                     <Button Text="Reset"
                                             Style="{StaticResource ResetButton}"
-                                            Command="{Binding BindingContext.ResetBlockCommand, Source={x:Reference TodayRoot}}"
+                                            IsEnabled="{Binding BindingContext.CanEdit, Source={x:Reference DayDetailRoot}}"
+                                            Command="{Binding BindingContext.ResetBlockCommand, Source={x:Reference DayDetailRoot}}"
                                             CommandParameter="{Binding}" />
                                 </HorizontalStackLayout>
 
@@ -131,27 +155,28 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <!-- Notes -->
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="6">
                     <Label Text="Poznamky" Style="{StaticResource H2}" />
-                    <Editor Text="{Binding Notes, Mode=TwoWay}" AutoSize="TextChanges" HeightRequest="100" Placeholder="Tvoje poznamky k dnesnimu dni..." />
+                    <Editor Text="{Binding Notes, Mode=TwoWay}" AutoSize="TextChanges" HeightRequest="100"
+                            IsEnabled="{Binding CanEdit}"
+                            Placeholder="Tvoje poznamky k tomuto dni..." />
                 </VerticalStackLayout>
             </Border>
 
-            <!-- Special day toggle -->
             <Button Text="Oznacit jako specialni den"
                     Style="{StaticResource ResetButton}"
                     HorizontalOptions="Start"
                     IsVisible="{Binding IsSpecialDay, Converter={x:StaticResource InvertedBoolConverter}}"
+                    IsEnabled="{Binding CanEdit}"
                     Command="{Binding ToggleSpecialDayCommand}" />
             <Button Text="Zrusit specialni den"
                     Style="{StaticResource ResetButton}"
                     HorizontalOptions="Start"
                     IsVisible="{Binding IsSpecialDay}"
+                    IsEnabled="{Binding CanEdit}"
                     Command="{Binding ClearSpecialDayCommand}" />
 
-            <!-- Watermark -->
             <Label Text="amonvo" FontSize="10" TextColor="{StaticResource WatermarkColor}"
                    HorizontalOptions="End" Opacity="0.6" Margin="0,0,8,4" />
 

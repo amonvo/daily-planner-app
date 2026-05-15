@@ -41,12 +41,14 @@ namespace PlannerApp
             builder.Services.AddTransient<WeekViewModel>();
             builder.Services.AddTransient<MonthViewModel>();
             builder.Services.AddTransient<YearViewModel>();
+            builder.Services.AddTransient<DayDetailViewModel>();
 
             builder.Services.AddTransient<TodayPage>();
             builder.Services.AddTransient<WeekPage>();
             builder.Services.AddTransient<MonthPage>();
             builder.Services.AddTransient<YearPage>();
             builder.Services.AddTransient<AboutPage>();
+            builder.Services.AddTransient<DayDetailPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();

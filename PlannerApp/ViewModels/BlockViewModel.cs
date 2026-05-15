@@ -33,6 +33,8 @@ namespace PlannerApp.ViewModels
 
         public string CategoryColor => GetCategoryColor(Block.Category);
 
+        public double LeftBorderWidth => IsCurrentBlock ? 12 : 6;
+
         public Color BackgroundColor
         {
             get
@@ -86,6 +88,7 @@ namespace PlannerApp.ViewModels
         {
             OnPropertyChanged(nameof(BackgroundColor));
             OnPropertyChanged(nameof(TextColor));
+            OnPropertyChanged(nameof(LeftBorderWidth));
         }
     }
 }

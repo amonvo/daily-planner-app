@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
              x:Class="PlannerApp.Views.MonthPage"
+             x:Name="MonthRoot"
              x:DataType="vm:MonthViewModel"
              Title="Mesic"
              BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
@@ -36,6 +37,11 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="vm:MonthDayCell">
                                 <Border BackgroundColor="{Binding CellBackground}" StrokeThickness="0" StrokeShape="RoundRectangle 6" Padding="4" HeightRequest="64">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding BindingContext.NavigateToDayCommand, Source={x:Reference MonthRoot}}"
+                                            CommandParameter="{Binding}" />
+                                    </Border.GestureRecognizers>
                                     <VerticalStackLayout Spacing="2">
                                         <Label Text="{Binding DayLabel}" FontSize="13" FontAttributes="Bold"
                                                TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
