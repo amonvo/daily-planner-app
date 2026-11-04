@@ -88,49 +88,49 @@ namespace PlannerApp.Services
 
                 // Workday
 
-                Make(DayType.Workday, "05:30", "06:00", "RannÄ‚Â­ rutina", Category.Routine, false, "Ă„Ĺšas vstÄ‚Ë‡t a pÄąâ„˘ipravit se na den."),
+                Make(DayType.Workday, "05:30", "06:00", "RannĂ­ rutina", Category.Routine, false, "ÄŚas vstĂˇt a pĹ™ipravit se na den."),
 
-                Make(DayType.Workday, "06:00", "06:45", "BĂ„â€şÄąÄľÄ‚Â­cÄ‚Â­ pÄ‚Ë‡s", Category.Running, true, "TeĂ„Ĺą mÄ‚Ë‡ÄąË‡ cviĂ„Ĺ¤enÄ‚Â­ Ă˘â‚¬â€ś bĂ„â€şÄąÄľÄ‚Â­cÄ‚Â­ pÄ‚Ë‡s 45 minut."),
+                Make(DayType.Workday, "06:00", "06:45", "BÄ›ĹľĂ­cĂ­ pĂˇs", Category.Running, true, "TeÄŹ mĂˇĹˇ cviÄŤenĂ­ â€“ bÄ›ĹľĂ­cĂ­ pĂˇs 45 minut."),
 
-                Make(DayType.Workday, "06:45", "07:15", "Sprcha a pÄąâ„˘Ä‚Â­prava", Category.Routine, false, "Sprcha, oblÄ‚Â©kÄ‚Ë‡nÄ‚Â­, pÄąâ„˘Ä‚Â­prava."),
+                Make(DayType.Workday, "06:45", "07:15", "Sprcha a pĹ™Ă­prava", Category.Routine, false, "Sprcha, oblĂ©kĂˇnĂ­, pĹ™Ă­prava."),
 
-                Make(DayType.Workday, "07:15", "08:00", "Cesta do prÄ‚Ë‡ce", Category.Commute, false, "Cesta do prÄ‚Ë‡ce Ă˘â‚¬â€ś zapni audioknihu nebo podcast."),
+                Make(DayType.Workday, "07:15", "08:00", "Cesta do prĂˇce", Category.Commute, false, "Cesta do prĂˇce â€“ zapni audioknihu nebo podcast."),
 
-                Make(DayType.Workday, "08:00", "16:00", "PrÄ‚Ë‡ce", Category.Work, false, "PracovnÄ‚Â­ doba Ă˘â‚¬â€ś soustÄąâ„˘edĂ„â€şnÄ‚Â­ na prÄ‚Ë‡ci."),
+                Make(DayType.Workday, "08:00", "16:00", "PrĂˇce", Category.Work, false, "PracovnĂ­ doba â€“ soustĹ™edÄ›nĂ­ na prĂˇci."),
 
-                Make(DayType.Workday, "16:00", "16:30", "Cesta domÄąĹ»", Category.Commute, false, "Cesta domÄąĹ» Ă˘â‚¬â€ś dekomprese, podcast."),
+                Make(DayType.Workday, "16:00", "16:30", "Cesta domĹŻ", Category.Commute, false, "Cesta domĹŻ â€“ dekomprese, podcast."),
 
-                Make(DayType.Workday, "16:30", "17:00", "VeĂ„Ĺ¤eÄąâ„˘e a pauza", Category.Routine, false, "VeĂ„Ĺ¤eÄąâ„˘e Ă˘â‚¬â€ś ÄąÄľÄ‚Ë‡dnÄ‚Ë‡ obrazovka, odpoĂ„Ĺ¤inek."),
+                Make(DayType.Workday, "16:30", "17:00", "VeÄŤeĹ™e a pauza", Category.Routine, false, "VeÄŤeĹ™e â€“ ĹľĂˇdnĂˇ obrazovka, odpoÄŤinek."),
 
-                Make(DayType.Workday, "17:00", "18:30", ".NET studium", Category.DotNet, true, "TeĂ„Ĺą mÄ‚Ë‡ÄąË‡ .NET studium Ă˘â‚¬â€ś otevÄąâ„˘i projekt a kÄ‚Ĺ‚duj."),
+                Make(DayType.Workday, "17:00", "18:30", ".NET studium", Category.DotNet, true, "TeÄŹ mĂˇĹˇ .NET studium â€“ otevĹ™i projekt a kĂłduj."),
 
-                Make(DayType.Workday, "18:30", "19:15", "VedlejÄąË‡Ä‚Â­ projekt", Category.Project, true, "Ă„Ĺšas na vedlejÄąË‡Ä‚Â­ projekt."),
+                Make(DayType.Workday, "18:30", "19:15", "VedlejĹˇĂ­ projekt", Category.Project, true, "ÄŚas na vedlejĹˇĂ­ projekt."),
 
-                Make(DayType.Workday, "19:15", "19:45", "Ă„ĹštenÄ‚Â­", Category.Reading, true, "Ă„ĹštenÄ‚Â­ Ă˘â‚¬â€ś fyzickÄ‚Ë‡ kniha, ÄąÄľÄ‚Ë‡dnÄ‚Ëť telefon."),
+                Make(DayType.Workday, "19:15", "19:45", "ÄŚtenĂ­", Category.Reading, true, "ÄŚtenĂ­ â€“ fyzickĂˇ kniha, ĹľĂˇdnĂ˝ telefon."),
 
-                Make(DayType.Workday, "19:45", "20:30", "VolnÄ‚Ëť Ă„Ĺ¤as", Category.FreeTime, false, "VolnÄ‚Ëť Ă„Ĺ¤as Ă˘â‚¬â€ś YouTube, zprÄ‚Ë‡vy, brainstorming."),
+                Make(DayType.Workday, "19:45", "20:30", "VolnĂ˝ ÄŤas", Category.FreeTime, false, "VolnĂ˝ ÄŤas â€“ YouTube, zprĂˇvy, brainstorming."),
 
-                Make(DayType.Workday, "20:30", "21:00", "PÄąâ„˘Ä‚Â­prava na zÄ‚Â­tÄąâ„˘ek", Category.Routine, false, "Wind-down Ă˘â‚¬â€ś pÄąâ„˘iprav vĂ„â€şci na zÄ‚Â­tÄąâ„˘ek."),
+                Make(DayType.Workday, "20:30", "21:00", "PĹ™Ă­prava na zĂ­tĹ™ek", Category.Routine, false, "Wind-down â€“ pĹ™iprav vÄ›ci na zĂ­tĹ™ek."),
 
-                Make(DayType.Workday, "21:00", "05:30", "SpÄ‚Ë‡nek", Category.Sleep, false, "Ă„Ĺšas spÄ‚Ë‡t Ă˘â‚¬â€ś telefon dolÄąĹ»."),
+                Make(DayType.Workday, "21:00", "05:30", "SpĂˇnek", Category.Sleep, false, "ÄŚas spĂˇt â€“ telefon dolĹŻ."),
 
                 // Weekend
 
-                Make(DayType.Weekend, "07:30", "09:00", "RannÄ‚Â­ volno", Category.FreeTime, false, "RannÄ‚Â­ volno Ă˘â‚¬â€ś snÄ‚Â­danĂ„â€ş, kÄ‚Ë‡va, klid."),
+                Make(DayType.Weekend, "07:30", "09:00", "RannĂ­ volno", Category.FreeTime, false, "RannĂ­ volno â€“ snĂ­danÄ›, kĂˇva, klid."),
 
-                Make(DayType.Weekend, "09:00", "11:00", ".NET nebo projekt", Category.DotNet, true, "HlavnÄ‚Â­ blok Ă˘â‚¬â€ś .NET studium nebo vedlejÄąË‡Ä‚Â­ projekt."),
+                Make(DayType.Weekend, "09:00", "11:00", ".NET nebo projekt", Category.DotNet, true, "HlavnĂ­ blok â€“ .NET studium nebo vedlejĹˇĂ­ projekt."),
 
-                Make(DayType.Weekend, "11:00", "12:00", "BĂ„â€şÄąÄľÄ‚Â­cÄ‚Â­ pÄ‚Ë‡s", Category.Running, true, "CviĂ„Ĺ¤enÄ‚Â­ Ă˘â‚¬â€ś delÄąË‡Ä‚Â­ trÄ‚Â©nink na bĂ„â€şÄąÄľÄ‚Â­cÄ‚Â­m pÄ‚Ë‡su."),
+                Make(DayType.Weekend, "11:00", "12:00", "BÄ›ĹľĂ­cĂ­ pĂˇs", Category.Running, true, "CviÄŤenĂ­ â€“ delĹˇĂ­ trĂ©nink na bÄ›ĹľĂ­cĂ­m pĂˇsu."),
 
-                Make(DayType.Weekend, "12:00", "14:00", "ObĂ„â€şd a volno", Category.FreeTime, false, "ObĂ„â€şd, pochÄąĹ»zky, odpoĂ„Ĺ¤inek."),
+                Make(DayType.Weekend, "12:00", "14:00", "ObÄ›d a volno", Category.FreeTime, false, "ObÄ›d, pochĹŻzky, odpoÄŤinek."),
 
-                Make(DayType.Weekend, "14:00", "15:30", "Projekt nebo tech", Category.Project, true, "Projekt nebo novÄ‚Ë‡ technologie."),
+                Make(DayType.Weekend, "14:00", "15:30", "Projekt nebo tech", Category.Project, true, "Projekt nebo novĂˇ technologie."),
 
-                Make(DayType.Weekend, "15:30", "16:30", "Ă„ĹštenÄ‚Â­", Category.Reading, true, "Ă„ĹštenÄ‚Â­ Ă˘â‚¬â€ś hodina soustÄąâ„˘edĂ„â€şnÄ‚Â©ho Ă„Ĺ¤tenÄ‚Â­."),
+                Make(DayType.Weekend, "15:30", "16:30", "ÄŚtenĂ­", Category.Reading, true, "ÄŚtenĂ­ â€“ hodina soustĹ™edÄ›nĂ©ho ÄŤtenĂ­."),
 
-                Make(DayType.Weekend, "16:30", "22:00", "VolnÄ‚Ëť Ă„Ĺ¤as", Category.FreeTime, false, "VolnÄ‚Ëť Ă„Ĺ¤as Ă˘â‚¬â€ś sociÄ‚Ë‡lnÄ‚Â­ aktivity, seriÄ‚Ë‡l, odpoĂ„Ĺ¤inek."),
+                Make(DayType.Weekend, "16:30", "22:00", "VolnĂ˝ ÄŤas", Category.FreeTime, false, "VolnĂ˝ ÄŤas â€“ sociĂˇlnĂ­ aktivity, seriĂˇl, odpoÄŤinek."),
 
-                Make(DayType.Weekend, "22:00", "07:30", "SpÄ‚Ë‡nek", Category.Sleep, false, "Ă„Ĺšas spÄ‚Ë‡t."),
+                Make(DayType.Weekend, "22:00", "07:30", "SpĂˇnek", Category.Sleep, false, "ÄŚas spĂˇt."),
 
             };
 
@@ -166,7 +166,7 @@ namespace PlannerApp.Services
 
         {
 
-            // Use workday blocks up to and including 16:30-17:00 (VeĂ„Ĺ¤eÄąâ„˘e a pauza), then add Tabor travel block
+            // Use workday blocks up to and including 16:30-17:00 (VeÄŤeĹ™e a pauza), then add Tabor travel block
 
             var result = workdayBlocks
 
@@ -208,13 +208,13 @@ namespace PlannerApp.Services
 
                 TimeTo = new TimeSpan(23, 59, 0),
 
-                ActivityName = "Cesta do TÄ‚Ë‡bora Ă˘â‚¬â€ś volno",
+                ActivityName = "Cesta do TĂˇbora â€“ volno",
 
                 Category = Category.FreeTime,
 
                 IsRequired = false,
 
-                NotificationMessage = "JedeÄąË‡ do TÄ‚Ë‡bora."
+                NotificationMessage = "JedeĹˇ do TĂˇbora."
 
             });
 
@@ -240,13 +240,13 @@ namespace PlannerApp.Services
 
                     TimeTo = new TimeSpan(23, 59, 0),
 
-                    ActivityName = "TÄ‚Ë‡bor Ă˘â‚¬â€ś volnÄ‚Ëť den",
+                    ActivityName = "TĂˇbor â€“ volnĂ˝ den",
 
                     Category = Category.FreeTime,
 
                     IsRequired = false,
 
-                    NotificationMessage = "TÄ‚Ë‡bor vÄ‚Â­kend Ă˘â‚¬â€ś volno."
+                    NotificationMessage = "TĂˇbor vĂ­kend â€“ volno."
 
                 }
 
@@ -270,13 +270,13 @@ namespace PlannerApp.Services
 
                     TimeTo = TimeSpan.FromHours(19),
 
-                    ActivityName = "TÄ‚Ë‡bor Ă˘â‚¬â€ś volnÄ‚Ëť den",
+                    ActivityName = "TĂˇbor â€“ volnĂ˝ den",
 
                     Category = Category.FreeTime,
 
                     IsRequired = false,
 
-                    NotificationMessage = "TÄ‚Ë‡bor vÄ‚Â­kend Ă˘â‚¬â€ś volno."
+                    NotificationMessage = "TĂˇbor vĂ­kend â€“ volno."
 
                 },
 
@@ -292,13 +292,13 @@ namespace PlannerApp.Services
 
                     TimeTo = new TimeSpan(23, 59, 0),
 
-                    ActivityName = "Cesta zpĂ„â€şt do PlznĂ„â€ş",
+                    ActivityName = "Cesta zpÄ›t do PlznÄ›",
 
                     Category = Category.Commute,
 
                     IsRequired = false,
 
-                    NotificationMessage = "Cesta zpĂ„â€şt domÄąĹ» do PlznĂ„â€ş."
+                    NotificationMessage = "Cesta zpÄ›t domĹŻ do PlznÄ›."
 
                 }
 

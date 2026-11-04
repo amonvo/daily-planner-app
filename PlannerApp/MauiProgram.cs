@@ -44,9 +44,9 @@ namespace PlannerApp
 
                             Id = NotificationService.ChannelId,
 
-                            Name = "PlannerApp pÄąâ„˘ipomenutÄ‚Â­",
+                            Name = "PlannerApp pĹ™ipomenutĂ­",
 
-                            Description = "PÄąâ„˘ipomenutÄ‚Â­ aktivit z dennÄ‚Â­ho plÄ‚Ë‡nu."
+                            Description = "PĹ™ipomenutĂ­ aktivit z dennĂ­ho plĂˇnu."
 
                         });
 

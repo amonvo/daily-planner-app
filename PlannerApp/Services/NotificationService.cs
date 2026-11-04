@@ -83,7 +83,7 @@ namespace PlannerApp.Services
 
                         NotificationId = id,
 
-                        Title = "PlannerApp â€“ ÄŤas zmÄ›nit aktivitu",
+                        Title = "PlannerApp – čas změnit aktivitu",
 
                         Description = block.NotificationMessage,
 
