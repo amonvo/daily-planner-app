@@ -10,6 +10,7 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="18" MaximumWidthRequest="920" HorizontalOptions="Fill">
+            <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource AccentRed}" FontSize="13" />
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
