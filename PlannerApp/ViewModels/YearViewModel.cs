@@ -34,50 +34,52 @@ namespace PlannerApp.ViewModels
         {
             _db = db;
             Title = "Rok";
-            year = DateTime.Today.Year;
-            if (year < 2026) year = 2026;
+            Year = DateTime.Today.Year;
+            if (Year < 2026) Year = 2026;
 
             WeakReferenceMessenger.Default.Register<CompletionChangedMessage>(this, async (r, m) => await LoadAsync());
         }
 
         [ObservableProperty]
-        private int year;
+        public partial int Year { get; set; }
 
         [ObservableProperty]
-        private string yearLabel = string.Empty;
+        public partial string YearLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<MonthTile> tiles = new();
+        public partial ObservableCollection<MonthTile> Tiles { get; set; } = new();
 
         [ObservableProperty]
-        private string daysWithDataLabel = string.Empty;
+        public partial string DaysWithDataLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string longestStreakLabel = string.Empty;
+        public partial string LongestStreakLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string bestMonthLabel = string.Empty;
+        public partial string BestMonthLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string worstMonthLabel = string.Empty;
+        public partial string WorstMonthLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string yearTotalLabel = string.Empty;
+        public partial string YearTotalLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string totalBlocksLabel = string.Empty;
+        public partial string TotalBlocksLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string specialDaysLabel = string.Empty;
+        public partial string SpecialDaysLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string taborWeekendsLabel = string.Empty;
+        public partial string TaborWeekendsLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private double yearTotalProgress;
+        public partial double YearTotalProgress { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<ActivityStat> activityStats = new();
+        public partial ObservableCollection<ActivityStat> ActivityStats { get; set; } = new();
+
+        [ObservableProperty] public partial List<TrendPoint> Trend { get; set; } = [];
 
         [RelayCommand]
         public async Task LoadAsync()
@@ -86,6 +88,7 @@ namespace PlannerApp.ViewModels
             try
             {
                 IsBusy = true;
+                ErrorMessage = string.Empty;
                 YearLabel = $"Rok {Year}";
 
                 Tiles.Clear();
@@ -110,7 +113,7 @@ namespace PlannerApp.ViewModels
 
                 for (int m = 1; m <= 12; m++)
                 {
-                    var monthLogs = yearLogs.Where(l => l.Date.Month == m && !l.IsSpecialDay).ToList();
+                    var monthLogs = yearLogs.Where(l => l.Date.Month == m && !l.IsSpecialDay && l.Date <= today && completions.Any(entry => entry.DayLogId == l.Id)).ToList();
                     int done = 0, req = 0;
                     foreach (var log in monthLogs)
                     {
@@ -157,20 +160,27 @@ namespace PlannerApp.ViewModels
                 }
 
                 Tiles = newTiles;
+                var dailyPoints = await new InsightService(_db).GetDaysAsync(new DateTime(Year, 1, 1), new DateTime(Year, 12, 31));
+                Trend = Enumerable.Range(1, 12).Select(month => {
+                    var recorded = dailyPoints.Where(point => point.Date.Month == month && point.Progress is not null).ToList();
+                    var required = recorded.Sum(point => point.Required);
+                    var done = recorded.Sum(point => point.Done);
+                    return new TrendPoint(new DateTime(Year, month, 1), DateHelper.FormatCzechMonthName(month)[..3], required == 0 ? null : (double)done / required, done, required);
+                }).ToList();
 
                 var ytPct = yearTotalReq == 0 ? 0 : (double)yearTotalDone / yearTotalReq;
                 if (yearTotalReq > 0 && yearTotalDone == yearTotalReq) ytPct = 1.0;
                 YearTotalProgress = ytPct;
-                YearTotalLabel = $"Celkova rocni uspesnost: {(int)Math.Round(ytPct * 100)} %";
+                YearTotalLabel = $"Celkova roční úspěšnost: {(int)Math.Round(ytPct * 100)} %";
                 TotalBlocksLabel = $"Splneno bloku: {yearTotalDone} / {yearTotalReq}";
-                BestMonthLabel = bestMonth == 0 ? "Nejlepsi mesic: -" :
-                    $"Nejlepsi mesic: {DateHelper.FormatCzechMonthName(bestMonth)} ({(int)Math.Round(bestPct * 100)} %)";
-                WorstMonthLabel = worstMonth == 0 ? "Nejslabsi mesic: -" :
-                    $"Nejslabsi mesic: {DateHelper.FormatCzechMonthName(worstMonth)} ({(int)Math.Round(worstPct * 100)} %)";
+                BestMonthLabel = bestMonth == 0 ? "Nejlepší měsíc: -" :
+                    $"Nejlepší měsíc: {DateHelper.FormatCzechMonthName(bestMonth)} ({(int)Math.Round(bestPct * 100)} %)";
+                WorstMonthLabel = worstMonth == 0 ? "Nejslabší měsíc: -" :
+                    $"Nejslabší měsíc: {DateHelper.FormatCzechMonthName(worstMonth)} ({(int)Math.Round(worstPct * 100)} %)";
 
                 var daysWithData = yearLogs.Count(l => !l.IsSpecialDay && completions.Any(c => c.DayLogId == l.Id));
                 DaysWithDataLabel = $"Dni s daty: {daysWithData} / {(DateTime.IsLeapYear(Year) ? 366 : 365)}";
-                SpecialDaysLabel = $"Specialnich dni: {specialDaysCount}";
+                SpecialDaysLabel = $"Zvláštních dni: {specialDaysCount}";
 
                 int taborWeekends = 0;
                 for (var d = new DateTime(Year, 1, 1); d.Year == Year; d = d.AddDays(1))
@@ -179,26 +189,14 @@ namespace PlannerApp.ViewModels
                 }
                 TaborWeekendsLabel = $"Tabor vikendu: {taborWeekends}";
 
-                int longest = 0, current = 0;
-                foreach (var log in yearLogs.OrderBy(l => l.Date))
-                {
-                    if (log.IsSpecialDay) { current = 0; continue; }
-                    if (!perDateBlocks.TryGetValue(log.Date.Date, out var dayBlocks)) { current = 0; continue; }
-                    var required = dayBlocks.Where(b => b.IsRequired).ToList();
-                    var dc = completions.Where(c => c.DayLogId == log.Id).ToList();
-                    var dn = required.Count(b => dc.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done));
-                    var p = required.Count == 0 ? 0 : (double)dn / required.Count;
-                    if (p >= 0.75) { current++; if (current > longest) longest = current; }
-                    else current = 0;
-                }
-                LongestStreakLabel = $"Nejdelsi serie: {longest} dni";
+                LongestStreakLabel = $"Nejdelší série: {ProgressInsights.LongestStreak(dailyPoints)} dní s alespoň 75 % plněním";
 
                 var stats = new ObservableCollection<ActivityStat>();
                 var requiredCategories = new[] { Category.DotNet, Category.Project, Category.Reading, Category.Running };
                 foreach (var cat in requiredCategories)
                 {
                     int catDone = 0, catTotal = 0;
-                    foreach (var log in yearLogs.Where(l => !l.IsSpecialDay))
+                    foreach (var log in yearLogs.Where(l => !l.IsSpecialDay && l.Date <= today && completions.Any(entry => entry.DayLogId == l.Id)))
                     {
                         if (!perDateBlocks.TryGetValue(log.Date.Date, out var dayBlocks)) continue;
                         var required = dayBlocks.Where(b => b.IsRequired && b.Category == cat).ToList();
@@ -223,6 +221,7 @@ namespace PlannerApp.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"YearLoad error: {ex}");
+                ErrorMessage = "Přehled se nepodařilo načíst. Zkuste jej otevřít znovu.";
             }
             finally
             {

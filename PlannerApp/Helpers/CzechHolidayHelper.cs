@@ -1,32 +1,27 @@
-namespace PlannerApp.Helpers
+namespace PlannerApp.Helpers;
+
+public static class CzechHolidayHelper
 {
-    public static class CzechHolidayHelper
+    public static IReadOnlyDictionary<DateTime, string> GetHolidays(int year)
     {
-        public static readonly IReadOnlyDictionary<DateTime, string> Holidays2026 =
-            new Dictionary<DateTime, string>
-            {
-                { new DateTime(2026, 1, 1), "Nový rok" },
-                { new DateTime(2026, 4, 3), "Velký pátek" },
-                { new DateTime(2026, 4, 6), "Velikonoèní pondìlí" },
-                { new DateTime(2026, 5, 1), "Svátek práce" },
-                { new DateTime(2026, 5, 8), "Den vítìzství" },
-                { new DateTime(2026, 7, 5), "Cyril a Metodìj" },
-                { new DateTime(2026, 7, 6), "Jan Hus" },
-                { new DateTime(2026, 9, 28), "Den èeské státnosti" },
-                { new DateTime(2026, 10, 28), "Den vzniku ÈSR" },
-                { new DateTime(2026, 11, 17), "Den svobody" },
-                { new DateTime(2026, 12, 24), "Štìdrý den" },
-                { new DateTime(2026, 12, 25), "1. svátek vánoèní" },
-                { new DateTime(2026, 12, 26), "2. svátek vánoèní" }
-            };
-
-        public static bool IsHoliday(DateTime date) =>
-            Holidays2026.ContainsKey(date.Date);
-
-        public static string? GetHolidayName(DateTime date) =>
-            Holidays2026.TryGetValue(date.Date, out var name) ? name : null;
-
-        public static IEnumerable<KeyValuePair<DateTime, string>> GetHolidaysInMonth(int year, int month) =>
-            Holidays2026.Where(h => h.Key.Year == year && h.Key.Month == month);
+        // Gregorian computus (Meeus/Jones/Butcher).
+        var a = year % 19; var b = year / 100; var c = year % 100;
+        var d = b / 4; var e = b % 4; var f = (b + 8) / 25;
+        var g = (b - f + 1) / 3; var h = (19 * a + b - d - g + 15) % 30;
+        var i = c / 4; var k = c % 4; var l = (32 + 2 * e + 2 * i - h - k) % 7;
+        var m = (a + 11 * h + 22 * l) / 451;
+        var easter = new DateTime(year, (h + l - 7 * m + 114) / 31, (h + l - 7 * m + 114) % 31 + 1);
+        return new Dictionary<DateTime, string>
+        {
+            [new(year, 1, 1)] = "NovÃ½ rok", [easter.AddDays(-2)] = "VelkÃ½ pÃ¡tek", [easter.AddDays(1)] = "VelikonoÄnÃ­ pondÄ›lÃ­",
+            [new(year, 5, 1)] = "SvÃ¡tek prÃ¡ce", [new(year, 5, 8)] = "Den vÃ­tÄ›zstvÃ­",
+            [new(year, 7, 5)] = "Cyril a MetodÄ›j", [new(year, 7, 6)] = "Jan Hus",
+            [new(year, 9, 28)] = "Den ÄeskÃ© stÃ¡tnosti", [new(year, 10, 28)] = "Den vzniku ÄŒSR",
+            [new(year, 11, 17)] = "Den svobody", [new(year, 12, 24)] = "Å tÄ›drÃ½ den",
+            [new(year, 12, 25)] = "1. svÃ¡tek vÃ¡noÄnÃ­", [new(year, 12, 26)] = "2. svÃ¡tek vÃ¡noÄnÃ­"
+        };
     }
+    public static bool IsHoliday(DateTime date) => GetHolidays(date.Year).ContainsKey(date.Date);
+    public static string? GetHolidayName(DateTime date) => GetHolidays(date.Year).GetValueOrDefault(date.Date);
+    public static IEnumerable<KeyValuePair<DateTime, string>> GetHolidaysInMonth(int year, int month) => GetHolidays(year).Where(day => day.Key.Month == month);
 }

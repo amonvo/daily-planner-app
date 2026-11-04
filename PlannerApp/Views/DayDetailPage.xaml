@@ -9,7 +9,8 @@
              BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="14">
+        <VerticalStackLayout Padding="24" Spacing="18" MaximumWidthRequest="920" HorizontalOptions="Fill">
+            <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource AccentRed}" FontSize="13" />
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
@@ -50,12 +51,12 @@
                     IsVisible="{Binding IsSpecialDay}">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <Label Grid.Column="0"
-                           Text="{Binding SpecialDayLabel, StringFormat='{0} - tento den se nezapocitava do statistik'}"
+                           Text="{Binding SpecialDayLabel, StringFormat='{0} - tento den se nezapočítává do statistik'}"
                            FontSize="13" FontAttributes="Bold"
                            TextColor="{StaticResource TextDark}"
                            VerticalOptions="Center" />
                     <Button Grid.Column="1"
-                            Text="Zrusit"
+                            Text="Zrušit"
                             Style="{StaticResource ResetButton}"
                             HeightRequest="32" FontSize="12" Padding="8,0"
                             IsEnabled="{Binding CanEdit}"
@@ -64,9 +65,9 @@
             </Border>
 
             <!-- Progress -->
-            <Border Style="{StaticResource Card}" IsVisible="{Binding IsSpecialDay, Converter={x:StaticResource InvertedBoolConverter}}">
+            <Border Style="{StaticResource Card}" IsVisible="{Binding IsSpecialDay, Converter={StaticResource InvertedBoolConverter}}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Pokrok dne" Style="{StaticResource H2}" />
+                    <Label Text="Dnešní pokrok" Style="{StaticResource H2}" />
                     <ProgressBar Progress="{Binding ProgressPercent}" HeightRequest="10" />
                     <Label Text="{Binding ProgressLabel}" Style="{StaticResource Body}" />
                 </VerticalStackLayout>
@@ -77,7 +78,7 @@
                 <Grid ColumnDefinitions="6,*" ColumnSpacing="12">
                     <BoxView Grid.Column="0" Color="{Binding CurrentBlockColor}" WidthRequest="6" />
                     <VerticalStackLayout Grid.Column="1" Spacing="4">
-                        <Label Text="Aktualni aktivita" Style="{StaticResource Muted}" />
+                        <Label Text="Právě teď" Style="{StaticResource Muted}" />
                         <Label Text="{Binding CurrentBlockName}" Style="{StaticResource H2}" />
                         <Label Text="{Binding CurrentBlockTime}" Style="{StaticResource Body}" />
                     </VerticalStackLayout>
@@ -88,7 +89,7 @@
                 <Label Text="{Binding NextBlockInfo}" Style="{StaticResource Body}" />
             </Border>
 
-            <Label Text="Plan dne" Style="{StaticResource H2}" />
+            <Label Text="Váš plán dne" Style="{StaticResource H2}" />
             <CollectionView ItemsSource="{Binding Blocks}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:BlockViewModel">
@@ -117,12 +118,12 @@
                                 <HorizontalStackLayout Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1"
                                                        Spacing="6" Margin="0,8,0,0"
                                                        IsVisible="{Binding IsNotDone}">
-                                    <Button Text="Splneno"
+                                    <Button Text="Splněno"
                                             Style="{StaticResource DoneButton}"
                                             IsEnabled="{Binding BindingContext.CanEdit, Source={x:Reference DayDetailRoot}}"
                                             Command="{Binding BindingContext.MarkDoneCommand, Source={x:Reference DayDetailRoot}}"
                                             CommandParameter="{Binding}" />
-                                    <Button Text="Preskocit"
+                                    <Button Text="Přeskočit"
                                             Style="{StaticResource SkipButton}"
                                             IsEnabled="{Binding BindingContext.CanEdit, Source={x:Reference DayDetailRoot}}"
                                             Command="{Binding BindingContext.MarkSkippedCommand, Source={x:Reference DayDetailRoot}}"
@@ -157,20 +158,20 @@
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Poznamky" Style="{StaticResource H2}" />
+                    <Label Text="Poznámky" Style="{StaticResource H2}" />
                     <Editor Text="{Binding Notes, Mode=TwoWay}" AutoSize="TextChanges" HeightRequest="100"
                             IsEnabled="{Binding CanEdit}"
                             Placeholder="Tvoje poznamky k tomuto dni..." />
                 </VerticalStackLayout>
             </Border>
 
-            <Button Text="Oznacit jako specialni den"
+            <Button Text="Oznacit jako zvláštní den"
                     Style="{StaticResource ResetButton}"
                     HorizontalOptions="Start"
-                    IsVisible="{Binding IsSpecialDay, Converter={x:StaticResource InvertedBoolConverter}}"
+                    IsVisible="{Binding IsSpecialDay, Converter={StaticResource InvertedBoolConverter}}"
                     IsEnabled="{Binding CanEdit}"
                     Command="{Binding ToggleSpecialDayCommand}" />
-            <Button Text="Zrusit specialni den"
+            <Button Text="Zrušit zvláštní den"
                     Style="{StaticResource ResetButton}"
                     HorizontalOptions="Start"
                     IsVisible="{Binding IsSpecialDay}"

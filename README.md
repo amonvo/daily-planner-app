@@ -1,128 +1,64 @@
-# PlannerApp
+# Daily Planner
 
-Mobilní denní plánovač pro Android postavený na .NET 9 MAUI. Aplikace slouží jako osobní organizér dne — zobrazuje fixní denní rozvrh rozdělený do časových bloků, umožňuje zaznamenávat splnění každé aktivity a zobrazuje statistiky za týden, měsíc a rok. Lokální notifikace automaticky upozorní na změnu aktivity.
+Osobní denní plánovač v .NET MAUI 10. Denní rozvrh, splněné aktivity, poznámky a přehledy za týden, měsíc a rok jsou uložené lokálně v SQLite.
 
----
+## Co aplikace umí
 
-## Funkce
+- Dnešní plán s aktuální aktivitou, další aktivitou a pokrokem povinných bloků.
+- Zaznamenání splnění, přeskočení a zpětná editace dne v kalendáři.
+- Zvláštní dny, které se nezapočítávají do statistik, a střídavé táborské víkendy.
+- České státní svátky vypočítané podle zvoleného roku včetně Velikonoc.
+- Pracovní a víkendové aktivity s upravitelným názvem, časem a textem připomenutí.
+- Světlý, tmavý a systémový vzhled, nastavitelný na stránce Nastavení.
+- JSON záloha a obnova rozvrhu, poznámek a splnění. Export denních poznámek za aktuální rok do CSV.
+- Mobilní lokální notifikace po povolení systémového oprávnění.
 
-- **Dnes** — přehled celého dne rozdělený do časových bloků, aktuální a následující aktivita, zaznamenávání splnění (Splněno / Přeskočeno / Nesplněno), denní poznámka
-- **Týden** — týdenní přehled s plněním per den a souhrnem per kategorie
-- **Měsíc** — kalendářní grid s barevným zvýrazněním produktivity, přehled svátků a Tábor víkendů
-- **Rok** — roční statistiky, přehled po měsících, nejdelší série splněných dní
-- Lokální push notifikace s připomenutím při každé změně aktivity
-- Automatické rozlišení typu dne: pracovní den / víkend / státní svátek / Tábor víkend
-- České státní svátky 2026 přednastaveny
-- Podpora světlého a tmavého režimu
-- Data uložena lokálně v SQLite — bez internetu, bez cloudu
+## Spuštění
 
----
+Vyžaduje .NET 10 SDK, odpovídající MAUI workload a platformní nástroje. Pro Android použijte SDK API 36 a zařízení/emulátor Android 8.0 nebo novější. Pro Windows použijte Windows 10/11 s MAUI Windows nástroji.
 
-## Technologie
-
-| Technologie | Verze |
-|---|---|
-| .NET MAUI | 9.0 |
-| CommunityToolkit.Maui | 9.1.0 |
-| CommunityToolkit.Mvvm | 8.3.2 |
-| sqlite-net-pcl | 1.9.172 |
-| SQLitePCLRaw.bundle_green | 2.1.6 |
-| Plugin.LocalNotification | 11.1.2 |
-
----
-
-## Struktura projektu
-
-```
-PlannerApp/
-├── Models/
-│   ├── ScheduleBlock.cs        # Definice časového bloku (čas, aktivita, kategorie)
-│   ├── DayLog.cs               # Záznam dne (datum, typ dne, poznámka)
-│   ├── BlockCompletion.cs      # Splnění konkrétního bloku v konkrétní den
-│   └── Enums.cs                # DayType, Category, CompletionStatus
-├── ViewModels/
-│   ├── BaseViewModel.cs
-│   ├── BlockViewModel.cs       # Wrapper bloku pro UI (barva, stav, příkazy)
-│   ├── TodayViewModel.cs
-│   ├── WeekViewModel.cs
-│   ├── MonthViewModel.cs
-│   └── YearViewModel.cs
-├── Views/
-│   ├── TodayPage.xaml
-│   ├── WeekPage.xaml
-│   ├── MonthPage.xaml
-│   └── YearPage.xaml
-├── Services/
-│   ├── DatabaseService.cs      # SQLite CRUD, seed dat při prvním spuštění
-│   └── NotificationService.cs  # Plánování lokálních notifikací
-├── Helpers/
-│   ├── CzechHolidayHelper.cs   # Státní svátky 2026
-│   ├── TaborHelper.cs          # Detekce Tábor víkendů (ob týden od 9. 1. 2026)
-│   └── DateHelper.cs           # ISO týden, český formát data, typ dne
-├── Resources/
-│   ├── Styles/
-│   │   ├── Colors.xaml
-│   │   └── Styles.xaml
-│   └── Fonts/
-└── Platforms/
-    └── Android/
+```sh
+git clone https://github.com/amonvo/daily-planner-app.git
+cd daily-planner-app
+dotnet workload install maui-android
+dotnet build PlannerApp/PlannerApp.csproj -f net10.0-android -p:TargetFrameworks=net10.0-android
 ```
 
----
+Ve Visual Studiu otevřete `PlannerApp/PlannerApp.sln`, vyberte Android emulátor nebo USB zařízení a spusťte projekt. Android APK je také dostupné mezi artefakty úspěšného běhu GitHub Actions. Jde o vývojový balíček podepsaný testovacím klíčem, určený k ověření aplikace.
 
-## Spuštění projektu
+Windows sestavení na Windows hostiteli
 
-### Požadavky
-
-- Visual Studio 2022 17.8+ s nainstalovaným workloadem **.NET MAUI**
-- Android SDK API 26+ (Android 8.0 nebo vyšší)
-
-### Postup
-
-```bash
-git clone https://github.com/amonvo/PlannerApp.git
+```sh
+dotnet workload install maui-windows
+dotnet build PlannerApp/PlannerApp.csproj -f net10.0-windows10.0.19041.0 -p:TargetFrameworks=net10.0-windows10.0.19041.0
 ```
 
-Otevři `PlannerApp.sln` ve Visual Studiu 2022, vyber cílovou platformu **Android** a spusť pomocí **F5**.
+Na Windows umístěte pracovní kopii do krátké cesty. Android nástroje mohou při dlouhé cestě projektu selhat při zpracování prostředků. Lokální ověření použilo kratší `BaseIntermediateOutputPath` a `BaseOutputPath`.
 
----
+## Práce s daty
 
-## Testování na fyzickém zařízení (Samsung A56)
+Identifikátor aplikace a název databáze `plannerapp.db3` zůstávají kvůli návaznosti na předchozí instalace. Při upgradu SQLite doplní nové sloupce a zachová existující záznamy. Táborské bloky ze starších verzí se nemažou. Souběžné vytváření dne a ukládání splnění je serializované.
 
-1. Na telefonu zapni **Nastavení → O telefonu → Číslo sestavení** (klepni 7×) → povolí se Režim vývojáře
-2. **Nastavení → Možnosti vývojáře → Ladění přes USB** — zapnout
-3. Připoj telefon USB kabelem a na telefonu potvrď hlášku "Povolit ladění přes USB"
-4. Ve Visual Studiu vyber zařízení v rozbalovací liště nástrojů (místo emulátoru)
-5. Spusť pomocí **F5**
+V Nastavení lze upravit existující aktivitu. Časy mohou přecházet přes půlnoc, sousední bloky se mohou dotýkat, ale překryvy jsou odmítnuté. Změny zachovávají identifikátory aktivit a povinnost aktivity. Historické přehledy používají současný rozvrh, proto změny časů a názvů platí i pro zobrazení starších dní.
 
-### Oprávnění vyžadovaná na Androidu
+Před obnovou vytvořte aktuální JSON zálohu. Obnova po potvrzení nahradí obsah databáze atomicky. Neplatná verze, duplicitní záznamy a neexistující vazby jsou odmítnuté. Zálohy obsahují osobní poznámky v čitelné podobě, ukládejte je do chráněného úložiště. CSV je přehled poznámek a zvláštních dní, plnou obnovu umožňuje JSON.
 
-Aplikace při prvním spuštění požádá o oprávnění k odesílání notifikací. Toto oprávnění je nutné pro funkci připomenutí aktivit. Bez něj aplikace funguje, ale notifikace se nezobrazí.
+Notifikace závisejí na oprávněních, úsporách baterie a podpoře Android/iOS. Windows verze je určena pro plán a přehledy. iOS a Mac Catalyst targety jsou zachované, jejich ověření vyžaduje Mac a odpovídající Apple nástroje.
 
----
+## Testy a CI
 
-## Denní rozvrh
+```sh
+dotnet test tests/PlannerApp.Tests/PlannerApp.Tests.csproj
+```
 
-Rozvrh je přednastavený a rozdělený na tři typy dní:
+Regresní testy ověřují Velikonoce ve více letech, přelom roku, půlnoc, překryvy, souběžné ukládání, starší SQLite schéma a obnovu zálohy. CI spouští testy na Linuxu a sestavuje Android a Windows. Datum, stav nativního připomenutí a skutečný životní cyklus aplikace je vhodné ověřit i na fyzickém telefonu.
 
-**Pracovní den (Po–Pá)**
+## Struktura
 
-| Čas | Aktivita | Kategorie |
-|---|---|---|
-| 05:30–06:00 | Ranní rutina | Rutina |
-| 06:00–06:45 | Běžící pás | Pohyb |
-| 07:15–08:00 | Cesta do práce | Dojíždění |
-| 08:00–16:00 | Práce | Práce |
-| 17:00–18:30 | .NET studium | .NET |
-| 18:30–19:15 | Vedlejší projekt | Projekt |
-| 19:15–19:45 | Čtení | Čtení |
-| 19:45–20:30 | Volný čas | Volno |
-| 21:00–05:30 | Spánek | Spánek |
+`PlannerApp/Views` obsahuje obrazovky, `ViewModels` stav a příkazy, `Services` databázi a notifikace, `Helpers` kalendář a časové výpočty a `Models` SQLite záznamy. `tests/PlannerApp.Tests` testuje skutečnou databázovou službu bez mobilního prostředí.
 
-**Víkend** a **Tábor víkend** mají vlastní rozvrh nastavený v `DatabaseService.cs` (seed data).
+Projekt je určen pro osobní použití. Samostatná licence pro další distribuci zatím nebyla stanovena.
 
----
+## Přehled a grafy
 
-## Licence
-
-Projekt je určen pro osobní použití.
+Úvodní obrazovka ukazuje dnešní priority, aktuální aktivitu a trend sedmi dní. Filtry Celý den, Zbývající a Priority zjednodušují plán. Poslední změnu stavu lze vrátit. Týdenní, měsíční a roční grafy počítají pouze zaznamenané povinné aktivity, vynechávají zvláštní i budoucí dny a odlišují chybějící záznam od nulového plnění. Klepnutím na sloupec v denním přehledu otevřete detail dne. Série alespoň 75% plnění musí navazovat v kalendáři bez mezer.

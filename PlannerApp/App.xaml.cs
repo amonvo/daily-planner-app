@@ -10,6 +10,7 @@ namespace PlannerApp
         public App(DatabaseService db, NotificationService notif)
         {
             InitializeComponent();
+            UserAppTheme = Preferences.Get("planner-theme", 0) switch { 1 => AppTheme.Light, 2 => AppTheme.Dark, _ => AppTheme.Unspecified };
             _db = db;
             _notif = notif;
         }

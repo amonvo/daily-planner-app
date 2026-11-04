@@ -15,6 +15,7 @@ namespace PlannerApp.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            _vm.SelectedDate = DateTime.Today;
             await _vm.LoadTodayAsync();
         }
 
