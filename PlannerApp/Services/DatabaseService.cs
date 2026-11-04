@@ -530,6 +530,14 @@ namespace PlannerApp.Services
             finally { _writeLock.Release(); }
         }
 
+        public async Task<List<DayLog>> GetLogsAsync(DateTime from, DateTime to)
+        {
+            await EnsureInitializedAsync();
+            var start = from.Date;
+            var end = to.Date.AddDays(1);
+            return await _database!.Table<DayLog>().Where(day => day.Date >= start && day.Date < end).OrderBy(day => day.Date).ToListAsync();
+        }
+
         public async Task<List<DayLog>> GetWeekLogsAsync(int weekNumber, int year)
 
         {

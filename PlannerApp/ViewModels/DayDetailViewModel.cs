@@ -45,7 +45,7 @@ namespace PlannerApp.ViewModels
         public partial double ProgressPercent { get; set; }
 
         [ObservableProperty]
-        public partial string ProgressLabel { get; set; } = "0 / 0 splneno (0 %)";
+        public partial string ProgressLabel { get; set; } = "0 / 0 splněno (0 %)";
 
         [ObservableProperty]
         public partial string CurrentBlockName { get; set; } = "Zadna aktivita";
@@ -160,7 +160,7 @@ namespace PlannerApp.ViewModels
                 TotalRequired = 0;
                 DoneCount = 0;
                 ProgressPercent = 0;
-                ProgressLabel = "Specialni den - nezapocitava se.";
+                ProgressLabel = "Zvláštní den - nezapočítává se.";
                 return;
             }
             TotalRequired = Blocks.Count(b => b.IsRequired);
@@ -169,14 +169,14 @@ namespace PlannerApp.ViewModels
             if (TotalRequired == 0)
             {
                 ProgressPercent = 0;
-                ProgressLabel = "0 / 0 splneno (0 %)";
+                ProgressLabel = "0 / 0 splněno (0 %)";
                 return;
             }
 
             ProgressPercent = (double)DoneCount / TotalRequired;
             if (DoneCount == TotalRequired) ProgressPercent = 1.0;
             var percent = (int)Math.Round(ProgressPercent * 100);
-            ProgressLabel = $"{DoneCount} / {TotalRequired} splneno ({percent} %)";
+            ProgressLabel = $"{DoneCount} / {TotalRequired} splněno ({percent} %)";
         }
 
         public void RefreshCurrentBlock()
@@ -337,13 +337,13 @@ namespace PlannerApp.ViewModels
             if (page is null) return;
 
             var options = new[] { "Festival", "Nemoc", "Dovolena", "Jine" };
-            var result = await page.DisplayActionSheetAsync("Oznacit jako specialni den", "Zrusit", null, options);
-            if (result is null || result == "Zrusit") return;
+            var result = await page.DisplayActionSheetAsync("Oznacit jako zvláštní den", "Zrušit", null, options);
+            if (result is null || result == "Zrušit") return;
 
             string label = result;
             if (result == "Jine")
             {
-                var custom = await page.DisplayPromptAsync("Specialni den", "Zadej nazev:", "OK", "Zrusit", "Napr. Vylet");
+                var custom = await page.DisplayPromptAsync("Zvláštní den", "Zadej nazev:", "OK", "Zrušit", "Napr. Vylet");
                 if (string.IsNullOrWhiteSpace(custom)) return;
                 label = custom.Trim();
             }

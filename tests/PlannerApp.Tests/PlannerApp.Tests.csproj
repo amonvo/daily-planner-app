@@ -9,5 +9,6 @@
     <Compile Include="../../PlannerApp/Models/*.cs" Link="Models/%(Filename)%(Extension)" />
     <Compile Include="../../PlannerApp/Helpers/*.cs" Link="Helpers/%(Filename)%(Extension)" />
     <Compile Include="../../PlannerApp/Services/DatabaseService.cs" Link="Services/DatabaseService.cs" />
+    <Compile Include="../../PlannerApp/Services/InsightService.cs" Link="Services/InsightService.cs" />
   </ItemGroup>
 </Project>

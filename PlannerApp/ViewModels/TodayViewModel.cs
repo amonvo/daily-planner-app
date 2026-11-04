@@ -47,7 +47,7 @@ namespace PlannerApp.ViewModels
         public partial double ProgressPercent { get; set; }
 
         [ObservableProperty]
-        public partial string ProgressLabel { get; set; } = "0 / 0 splneno (0 %)";
+        public partial string ProgressLabel { get; set; } = "0 / 0 splněno (0 %)";
 
         [ObservableProperty]
         public partial string CurrentBlockName { get; set; } = "Zadna aktivita";
@@ -59,10 +59,10 @@ namespace PlannerApp.ViewModels
         public partial string CurrentBlockColor { get; set; } = "#7C3AED";
 
         [ObservableProperty]
-        public partial string NextBlockName { get; set; } = "Zadna dalsi aktivita dnes";
+        public partial string NextBlockName { get; set; } = "Pro dnešek je váš plán kompletní.";
 
         [ObservableProperty]
-        public partial string NextBlockInfo { get; set; } = "Zadna dalsi aktivita dnes";
+        public partial string NextBlockInfo { get; set; } = "Pro dnešek je váš plán kompletní.";
 
         [ObservableProperty]
         public partial string Notes { get; set; } = string.Empty;
@@ -72,6 +72,64 @@ namespace PlannerApp.ViewModels
 
         [ObservableProperty]
         public partial string SpecialDayLabel { get; set; } = string.Empty;
+
+
+        [ObservableProperty] public partial List<TrendPoint> RecentTrend { get; set; } = [];
+        [ObservableProperty] public partial string ActionMessage { get; set; } = string.Empty;
+        [ObservableProperty] public partial bool CanUndo { get; set; }
+        [ObservableProperty] public partial string RemainingTime { get; set; } = string.Empty;
+        private string filter = "all";
+        private BlockViewModel? undoBlock;
+        private CompletionStatus undoStatus;
+        private readonly SemaphoreSlim actionLock = new(1, 1);
+        public IEnumerable<BlockViewModel> VisibleBlocks => filter switch {
+            "pending" => Blocks.Where(block => block.IsRequired && block.IsNotDone),
+            "focus" => Blocks.Where(block => block.IsRequired),
+            _ => Blocks
+        };
+        public string Greeting => DateTime.Now.Hour < 11 ? "Dobré ráno." : DateTime.Now.Hour < 18 ? "Hezký den." : "Klidný večer.";
+        public string RemainingLabel => IsSpecialDay ? "Volnější den" : $"{Math.Max(0, TotalRequired - DoneCount)} zbývá";
+        public string DoneLabel => $"{DoneCount} hotovo";
+        public string ProgressHint => IsSpecialDay ? "Dnes si dejte prostor. Tento den se do statistik nezapočítává." : TotalRequired == 0 ? "Dnes nemáte povinné aktivity. Užijte si volnější tempo." : DoneCount == TotalRequired ? "Pro dnešek máte splněno. Dopřejte si zasloužený odpočinek." : "Jeden krok po druhém. I malý pokrok se počítá.";
+        public bool HasCurrentAction => Blocks.Any(block => block.IsCurrentBlock && block.IsNotDone);
+        public bool HasVisibleBlocks => VisibleBlocks.Any();
+        private static Color FilterColor(bool active) => active ? Color.FromArgb(Application.Current?.RequestedTheme == AppTheme.Dark ? "#365C48" : "#E2EBD9") : Colors.Transparent;
+        public Color AllFilterBackground => FilterColor(filter == "all");
+        public Color PendingFilterBackground => FilterColor(filter == "pending");
+        public Color FocusFilterBackground => FilterColor(filter == "focus");
+        [RelayCommand] private void SetFilter(string value)
+        {
+            filter = value;
+            OnPropertyChanged(nameof(VisibleBlocks)); OnPropertyChanged(nameof(HasVisibleBlocks));
+            OnPropertyChanged(nameof(AllFilterBackground)); OnPropertyChanged(nameof(PendingFilterBackground)); OnPropertyChanged(nameof(FocusFilterBackground));
+        }
+        [RelayCommand] private async Task CompleteCurrentAsync() => await SaveStatusAsync(Blocks.FirstOrDefault(block => block.IsCurrentBlock), CompletionStatus.Done);
+        [RelayCommand] private async Task OpenTrendDayAsync(TrendPoint point) => await Shell.Current.GoToAsync($"daydetail?date={point.Date:yyyy-MM-dd}");
+        [RelayCommand] private async Task OpenWeekAsync() => await Shell.Current.GoToAsync("//week");
+        [RelayCommand] private async Task UndoLastAsync()
+        {
+            if (undoBlock is null || !CanUndo) return;
+            await SaveStatusAsync(undoBlock, undoStatus, false);
+        }
+
+        private async Task SaveStatusAsync(BlockViewModel? block, CompletionStatus status, bool allowUndo = true)
+        {
+            if (block is null || _currentDayLog is null) return;
+            await actionLock.WaitAsync();
+            try {
+                ErrorMessage = string.Empty;
+                var previous = block.Status;
+                await _db.UpsertCompletionAsync(new BlockCompletion { DayLogId = _currentDayLog.Id, ScheduleBlockId = block.ScheduleBlockId, Status = status, CompletedAt = status == CompletionStatus.NotDone ? null : DateTime.Now });
+                block.Status = status;
+                undoBlock = block; undoStatus = previous; CanUndo = allowUndo;
+                ActionMessage = allowUndo ? $"{block.ActivityName} · {(status == CompletionStatus.Done ? "splněno" : status == CompletionStatus.Skipped ? "přeskočeno" : "vráceno do plánu")}" : "Poslední změna byla vrácena.";
+                UpdateStats(); RefreshCurrentBlock();
+                RecentTrend = await new InsightService(_db).GetDaysAsync(DateTime.Today.AddDays(-6), DateTime.Today);
+                WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
+            }
+            catch (Exception exception) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(exception); }
+            finally { actionLock.Release(); }
+        }
 
         public DateTime SelectedDate
         {
@@ -94,6 +152,9 @@ namespace PlannerApp.ViewModels
             {
                 IsBusy = true;
                 StopTimer();
+                ErrorMessage = string.Empty;
+                CanUndo = false;
+                ActionMessage = string.Empty;
 
                 _currentDayLog = await _db.GetOrCreateDayLogAsync(_selectedDate);
                 TodayDate = DateHelper.FormatLongCzechDate(_selectedDate);
@@ -130,6 +191,7 @@ namespace PlannerApp.ViewModels
 
                 UpdateStats();
                 RefreshCurrentBlock();
+                RecentTrend = await new InsightService(_db).GetDaysAsync(DateTime.Today.AddDays(-6), DateTime.Today);
                 StartTimer();
             }
             catch (Exception ex)
@@ -153,28 +215,11 @@ namespace PlannerApp.ViewModels
 
         private void UpdateStats()
         {
-            if (IsSpecialDay)
-            {
-                TotalRequired = 0;
-                DoneCount = 0;
-                ProgressPercent = 0;
-                ProgressLabel = "Specialni den - nezapocitava se.";
-                return;
-            }
-            TotalRequired = Blocks.Count(b => b.IsRequired);
-            DoneCount = Blocks.Count(b => b.IsRequired && b.IsCompleted);
-
-            if (TotalRequired == 0)
-            {
-                ProgressPercent = 0;
-                ProgressLabel = "0 / 0 splneno (0 %)";
-                return;
-            }
-
-            ProgressPercent = (double)DoneCount / TotalRequired;
-            if (DoneCount == TotalRequired) ProgressPercent = 1.0;
-            var percent = (int)Math.Round(ProgressPercent * 100);
-            ProgressLabel = $"{DoneCount} / {TotalRequired} splneno ({percent} %)";
+            TotalRequired = IsSpecialDay ? 0 : Blocks.Count(block => block.IsRequired);
+            DoneCount = IsSpecialDay ? 0 : Blocks.Count(block => block.IsRequired && block.IsCompleted);
+            ProgressPercent = TotalRequired == 0 ? 0 : (double)DoneCount / TotalRequired;
+            ProgressLabel = $"{DoneCount} z {TotalRequired} povinných aktivit";
+            foreach (var name in new[] { nameof(RemainingLabel), nameof(DoneLabel), nameof(ProgressHint), nameof(VisibleBlocks), nameof(HasVisibleBlocks) }) OnPropertyChanged(name);
         }
 
         public void RefreshCurrentBlock()
@@ -195,14 +240,19 @@ namespace PlannerApp.ViewModels
                 CurrentBlockName = current2.ActivityName;
                 CurrentBlockTime = current2.TimeLabel;
                 CurrentBlockColor = current2.CategoryColor;
+                var end = _selectedDate.Date.Add(current2.Block.TimeTo);
+                if (current2.Block.TimeTo <= current2.Block.TimeFrom && now.ToTimeSpan() >= current2.Block.TimeFrom) end = end.AddDays(1);
+                RemainingTime = $"Ještě {Math.Max(1, (int)Math.Ceiling((end - DateTime.Now).TotalMinutes))} min";
             }
             else
             {
-                CurrentBlockName = "Zadna aktivita";
+                CurrentBlockName = "Chvilka pro sebe";
+                RemainingTime = "V plánu teď nemáte žádnou aktivitu.";
                 CurrentBlockTime = string.Empty;
                 CurrentBlockColor = "#64748B";
             }
 
+            OnPropertyChanged(nameof(HasCurrentAction));
             var nowTs = now.ToTimeSpan();
             var next = Blocks
                 .Where(b => !b.IsCurrentBlock && b.Block.TimeFrom > nowTs)
@@ -210,13 +260,13 @@ namespace PlannerApp.ViewModels
                 .FirstOrDefault();
             if (next is not null && isToday)
             {
-                NextBlockName = $"Dalsi: {next.ActivityName} v {next.Block.TimeFrom:hh\\:mm}";
-                NextBlockInfo = $"Dalsi: {next.ActivityName} v {next.Block.TimeFrom:hh\\:mm}";
+                NextBlockName = $"Potom: {next.ActivityName} v {next.Block.TimeFrom:hh\\:mm}";
+                NextBlockInfo = $"Potom: {next.ActivityName} v {next.Block.TimeFrom:hh\\:mm}";
             }
             else
             {
-                NextBlockName = "Zadna dalsi aktivita dnes";
-                NextBlockInfo = "Zadna dalsi aktivita dnes";
+                NextBlockName = "Pro dnešek je váš plán kompletní.";
+                NextBlockInfo = "Pro dnešek je váš plán kompletní.";
             }
         }
 
@@ -266,64 +316,19 @@ namespace PlannerApp.ViewModels
         [RelayCommand]
         private async Task MarkDoneAsync(BlockViewModel? block)
         {
-            try
-            {
-            if (block is null || _currentDayLog is null) return;
-            await _db.UpsertCompletionAsync(new BlockCompletion
-            {
-                DayLogId = _currentDayLog.Id,
-                ScheduleBlockId = block.ScheduleBlockId,
-                Status = CompletionStatus.Done,
-                CompletedAt = DateTime.Now
-            });
-            block.Status = CompletionStatus.Done;
-            UpdateStats();
-            WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
-        
-            }
-            catch (Exception ex) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(ex); }
+            await SaveStatusAsync(block, CompletionStatus.Done);
         }
 
         [RelayCommand]
         private async Task MarkSkippedAsync(BlockViewModel? block)
         {
-            try
-            {
-            if (block is null || _currentDayLog is null) return;
-            await _db.UpsertCompletionAsync(new BlockCompletion
-            {
-                DayLogId = _currentDayLog.Id,
-                ScheduleBlockId = block.ScheduleBlockId,
-                Status = CompletionStatus.Skipped,
-                CompletedAt = DateTime.Now
-            });
-            block.Status = CompletionStatus.Skipped;
-            UpdateStats();
-            WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
-        
-            }
-            catch (Exception ex) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(ex); }
+            await SaveStatusAsync(block, CompletionStatus.Skipped);
         }
 
         [RelayCommand]
         private async Task ResetBlockAsync(BlockViewModel? block)
         {
-            try
-            {
-            if (block is null || _currentDayLog is null) return;
-            await _db.UpsertCompletionAsync(new BlockCompletion
-            {
-                DayLogId = _currentDayLog.Id,
-                ScheduleBlockId = block.ScheduleBlockId,
-                Status = CompletionStatus.NotDone,
-                CompletedAt = null
-            });
-            block.Status = CompletionStatus.NotDone;
-            UpdateStats();
-            WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
-        
-            }
-            catch (Exception ex) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(ex); }
+            await SaveStatusAsync(block, CompletionStatus.NotDone);
         }
 
         [RelayCommand]
@@ -339,14 +344,14 @@ namespace PlannerApp.ViewModels
             var page = Application.Current?.Windows.FirstOrDefault()?.Page;
             if (page is null) return;
 
-            var options = new[] { "Festival", "Nemoc", "Dovolena", "Jine" };
-            var result = await page.DisplayActionSheetAsync("Oznacit jako specialni den", "Zrusit", null, options);
-            if (result is null || result == "Zrusit") return;
+            var options = new[] { "Festival", "Nemoc", "Dovolená", "Jiné" };
+            var result = await page.DisplayActionSheetAsync("Uvolnit dnešní plán", "Zrušit", null, options);
+            if (result is null || result == "Zrušit") return;
 
             string label = result;
-            if (result == "Jine")
+            if (result == "Jiné")
             {
-                var custom = await page.DisplayPromptAsync("Specialni den", "Zadej nazev:", "OK", "Zrusit", "Napr. Vylet");
+                var custom = await page.DisplayPromptAsync("Zvláštní den", "Zadej nazev:", "OK", "Zrušit", "Napr. Vylet");
                 if (string.IsNullOrWhiteSpace(custom)) return;
                 label = custom.Trim();
             }

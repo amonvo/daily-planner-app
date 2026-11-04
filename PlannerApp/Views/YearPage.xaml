@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:charts="clr-namespace:PlannerApp.Controls"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
              x:Class="PlannerApp.Views.YearPage"
              x:DataType="vm:YearViewModel"
@@ -16,6 +17,16 @@
                     <Label Grid.Column="1" Text="{Binding YearLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" VerticalOptions="Center" />
                     <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                 </Grid>
+            </Border>
+
+            <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource AccentRed}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Jak se vám daří" Style="{StaticResource H2}" />
+                    <Label Text="Podíl splněných povinných aktivit · 0–100 %" Style="{StaticResource Muted}" />
+                    <charts:ProgressChart Points="{Binding Trend}" />
+                    <Label Text="Zelená = zaznamenané plnění. Pomlčka = bez záznamu, volný nebo budoucí den." Style="{StaticResource Muted}" />
+                </VerticalStackLayout>
             </Border>
 
             <CollectionView ItemsSource="{Binding Tiles}" SelectionMode="None">
@@ -36,7 +47,7 @@
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Rocni souhrn" Style="{StaticResource H2}" />
+                    <Label Text="Roční souhrn" Style="{StaticResource H2}" />
                     <ProgressBar Progress="{Binding YearTotalProgress}" HeightRequest="12" />
                     <Label Text="{Binding YearTotalLabel}" Style="{StaticResource Body}" FontAttributes="Bold" />
                     <Label Text="{Binding TotalBlocksLabel}" Style="{StaticResource Body}" />

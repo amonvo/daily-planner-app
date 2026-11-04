@@ -88,6 +88,8 @@ namespace PlannerApp.ViewModels
         [ObservableProperty]
         public partial ObservableCollection<string> Holidays { get; set; } = new();
 
+        [ObservableProperty] public partial List<TrendPoint> Trend { get; set; } = [];
+
         [RelayCommand]
         public async Task LoadAsync()
         {
@@ -95,6 +97,7 @@ namespace PlannerApp.ViewModels
             try
             {
                 IsBusy = true;
+                ErrorMessage = string.Empty;
                 MonthLabel = $"{DateHelper.FormatCzechMonthName(Month)} {Year}";
 
                 var firstDay = new DateTime(Year, Month, 1);
@@ -150,7 +153,7 @@ namespace PlannerApp.ViewModels
                         isSpecialDay = log?.IsSpecialDay ?? false;
                         if (isSpecialDay) specialDaysCount++;
 
-                        if (!isSpecialDay && perDateBlocks.TryGetValue(date.Date, out var dayBlocks))
+                        if (!isSpecialDay && !isFuture && perDateBlocks.TryGetValue(date.Date, out var dayBlocks))
                         {
                             var required = dayBlocks.Where(b => b.IsRequired).ToList();
                             var dayCompletions = log is null ? new List<BlockCompletion>() :
@@ -168,7 +171,7 @@ namespace PlannerApp.ViewModels
                             }
 
                             monthDone += done;
-                            monthReq += required.Count;
+                            if (hasData) monthReq += required.Count;
                             perDayProgress[date.Date] = hasData ? progress : -1;
                         }
                     }
@@ -214,8 +217,8 @@ namespace PlannerApp.ViewModels
                 if (monthReq > 0 && monthDone == monthReq) monthPercent = 1.0;
                 MonthTotalProgress = monthPercent;
                 SummaryLabel = $"Celkem: {monthDone} / {monthReq} ({(int)Math.Round(monthPercent * 100)} %)";
-                SpecialDaysLabel = specialDaysCount == 0 ? "Zadne specialni dny" :
-                    $"{specialDaysCount} {(specialDaysCount == 1 ? "den oznacen" : specialDaysCount < 5 ? "dny oznaceny" : "dnu oznaceno")} jako specialni";
+                SpecialDaysLabel = specialDaysCount == 0 ? "Zadne zvláštní dny" :
+                    $"{specialDaysCount} {(specialDaysCount == 1 ? "den oznacen" : specialDaysCount < 5 ? "dny oznaceny" : "dnu oznaceno")} jako zvláštní";
 
                 int streak = 0;
                 for (var d = today; d.Month == Month && d.Year == Year; d = d.AddDays(-1))
@@ -238,10 +241,10 @@ namespace PlannerApp.ViewModels
                     }
                     else cur = 0;
                 }
-                LongestStreakLabel = $"Nejdelsi serie: {longest} dni";
+                LongestStreakLabel = $"Nejdelší série: {longest} dni";
 
                 var weeksInMonth = monthLogs
-                    .Where(l => !l.IsSpecialDay)
+                    .Where(l => !l.IsSpecialDay && l.Date <= DateTime.Today && completions.Any(entry => entry.DayLogId == l.Id))
                     .GroupBy(l => DateHelper.GetIsoWeekNumber(l.Date)).ToList();
                 int bestWeek = 0, worstWeek = 0;
                 double bestPct = -1, worstPct = 2;
@@ -268,7 +271,7 @@ namespace PlannerApp.ViewModels
                 foreach (var cat in requiredCategories)
                 {
                     int catDone = 0, catTotal = 0;
-                    var eligibleLogs = monthLogs.Where(l => !l.IsSpecialDay).ToList();
+                    var eligibleLogs = monthLogs.Where(l => !l.IsSpecialDay && l.Date <= DateTime.Today && completions.Any(entry => entry.DayLogId == l.Id)).ToList();
                     foreach (var log in eligibleLogs)
                     {
                         if (!perDateBlocks.TryGetValue(log.Date.Date, out var dayBlocks)) continue;
@@ -298,10 +301,12 @@ namespace PlannerApp.ViewModels
                 foreach (var kv in CzechHolidayHelper.GetHolidaysInMonth(Year, Month))
                     hol.Add($"{kv.Key:d. M.} - {kv.Value}");
                 Holidays = hol;
+                Trend = await new InsightService(_db).GetDaysAsync(new DateTime(Year, Month, 1), new DateTime(Year, Month, DateTime.DaysInMonth(Year, Month)));
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"MonthLoad error: {ex}");
+                ErrorMessage = "Přehled se nepodařilo načíst. Zkuste jej otevřít znovu.";
             }
             finally
             {

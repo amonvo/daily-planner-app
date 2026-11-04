@@ -71,6 +71,8 @@ namespace PlannerApp.ViewModels
         [ObservableProperty]
         public partial string WeekTotalLabel { get; set; } = string.Empty;
 
+        [ObservableProperty] public partial List<TrendPoint> Trend { get; set; } = [];
+
         [RelayCommand]
         public async Task LoadAsync()
         {
@@ -78,7 +80,8 @@ namespace PlannerApp.ViewModels
             try
             {
                 IsBusy = true;
-                WeekLabel = $"Tyden {WeekNumber} / {Year}";
+                ErrorMessage = string.Empty;
+                WeekLabel = $"Týden {WeekNumber} / {Year}";
                 var start = DateHelper.GetIsoWeekStart(Year, WeekNumber);
                 var end = start.AddDays(6);
                 DateRangeLabel = $"{start:d. M.} - {end:d. M. yyyy}";
@@ -88,11 +91,12 @@ namespace PlannerApp.ViewModels
 
                 var newDays = new ObservableCollection<WeekDaySummary>();
 
+                var savedDays = await _db.GetLogsAsync(start, end);
                 var weekDayLogs = new List<DayLog>();
                 for (int i = 0; i < 7; i++)
                 {
                     var date = start.AddDays(i);
-                    var log = await _db.GetOrCreateDayLogAsync(date);
+                    var log = savedDays.FirstOrDefault(day => day.Date == date) ?? new DayLog { Date = date, DayType = DateHelper.DetectDayType(date) };
                     weekDayLogs.Add(log);
                 }
 
@@ -127,6 +131,12 @@ namespace PlannerApp.ViewModels
                     var required = blocks.Where(b => b.IsRequired).ToList();
                     var dayCompletions = completions.Where(c => c.DayLogId == log.Id).ToList();
                     int done = required.Count(b => dayCompletions.Any(c => c.ScheduleBlockId == b.Id && c.Status == CompletionStatus.Done));
+
+                    if (dayCompletions.Count == 0 || log.Date > DateTime.Today)
+                    {
+                        newDays.Add(new WeekDaySummary { Date = log.Date, DayName = DateHelper.FormatCzechDayName(log.Date), DateLabel = log.Date.ToString("d. M."), DayTypeLabel = DateHelper.GetDayTypeLabel(log.DayType), PercentLabel = log.Date > DateTime.Today ? "Teprve přijde" : "Bez záznamu" });
+                        continue;
+                    }
 
                     foreach (var rb in required)
                     {
@@ -176,6 +186,7 @@ namespace PlannerApp.ViewModels
                 }
 
                 Days = newDays;
+                Trend = await new InsightService(_db).GetDaysAsync(start, end);
 
                 var newCats = new ObservableCollection<CategorySummary>();
                 foreach (var kv in perCategory.OrderBy(k => k.Key))
@@ -202,6 +213,7 @@ namespace PlannerApp.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"WeekLoad error: {ex}");
+                ErrorMessage = "Přehled se nepodařilo načíst. Zkuste jej otevřít znovu.";
             }
             finally
             {
@@ -218,10 +230,10 @@ namespace PlannerApp.ViewModels
             Category.Work => "Prace",
             Category.Commute => "Cesta",
             Category.DotNet => ".NET studium",
-            Category.Project => "Vedlejsi projekt",
+            Category.Project => "Vedlejší projekt",
             Category.Reading => "Cteni",
-            Category.Running => "Bezici pas",
-            Category.FreeTime => "Volny cas",
+            Category.Running => "Běžící pás",
+            Category.FreeTime => "Volný čas",
             _ => c.ToString()
         };
 

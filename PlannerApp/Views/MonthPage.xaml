@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:charts="clr-namespace:PlannerApp.Controls"
              xmlns:vm="clr-namespace:PlannerApp.ViewModels"
              x:Class="PlannerApp.Views.MonthPage"
              x:Name="MonthRoot"
@@ -10,6 +11,16 @@
 
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="18" MaximumWidthRequest="920" HorizontalOptions="Fill">
+
+            <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource AccentRed}" />
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Jak se vám daří" Style="{StaticResource H2}" />
+                    <Label Text="Podíl splněných povinných aktivit · 0–100 %" Style="{StaticResource Muted}" />
+                    <charts:ProgressChart Points="{Binding Trend}" />
+                    <Label Text="Zelená = zaznamenané plnění. Pomlčka = bez záznamu, volný nebo budoucí den." Style="{StaticResource Muted}" />
+                </VerticalStackLayout>
+            </Border>
 
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
@@ -58,7 +69,7 @@
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Souhrn mesice" Style="{StaticResource H2}" />
+                    <Label Text="Souhrn měsíce" Style="{StaticResource H2}" />
                     <ProgressBar Progress="{Binding MonthTotalProgress}" HeightRequest="10" />
                     <Label Text="{Binding SummaryLabel}" Style="{StaticResource Body}" />
                     <Label Text="{Binding BestWeekLabel}" Style="{StaticResource Body}" />
@@ -71,7 +82,7 @@
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Aktivity v mesici" Style="{StaticResource H2}" />
+                    <Label Text="Aktivity v měsíci" Style="{StaticResource H2}" />
                     <CollectionView ItemsSource="{Binding CategoryStats}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="vm:MonthCategoryStat">
@@ -89,7 +100,7 @@
 
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="Svatky v tomto mesici" Style="{StaticResource H2}" />
+                    <Label Text="Svátky v tomto měsíci" Style="{StaticResource H2}" />
                     <CollectionView ItemsSource="{Binding Holidays}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="{x:Type x:String}">

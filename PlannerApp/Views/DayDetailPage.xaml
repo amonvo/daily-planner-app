@@ -51,12 +51,12 @@
                     IsVisible="{Binding IsSpecialDay}">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <Label Grid.Column="0"
-                           Text="{Binding SpecialDayLabel, StringFormat='{0} - tento den se nezapocitava do statistik'}"
+                           Text="{Binding SpecialDayLabel, StringFormat='{0} - tento den se nezapočítává do statistik'}"
                            FontSize="13" FontAttributes="Bold"
                            TextColor="{StaticResource TextDark}"
                            VerticalOptions="Center" />
                     <Button Grid.Column="1"
-                            Text="Zrusit"
+                            Text="Zrušit"
                             Style="{StaticResource ResetButton}"
                             HeightRequest="32" FontSize="12" Padding="8,0"
                             IsEnabled="{Binding CanEdit}"
@@ -165,13 +165,13 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Button Text="Oznacit jako specialni den"
+            <Button Text="Oznacit jako zvláštní den"
                     Style="{StaticResource ResetButton}"
                     HorizontalOptions="Start"
                     IsVisible="{Binding IsSpecialDay, Converter={StaticResource InvertedBoolConverter}}"
                     IsEnabled="{Binding CanEdit}"
                     Command="{Binding ToggleSpecialDayCommand}" />
-            <Button Text="Zrusit specialni den"
+            <Button Text="Zrušit zvláštní den"
                     Style="{StaticResource ResetButton}"
                     HorizontalOptions="Start"
                     IsVisible="{Binding IsSpecialDay}"

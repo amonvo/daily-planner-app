@@ -521,6 +521,12 @@
         <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
     </Style>
 
+    <Style x:Key="FilterButton" TargetType="Button">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="8,10" />
+    </Style>
 </ResourceDictionary>
 
 
