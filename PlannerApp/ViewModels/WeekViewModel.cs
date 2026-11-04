@@ -44,32 +44,32 @@ namespace PlannerApp.ViewModels
             _db = db;
             Title = "Tyden";
             var today = DateTime.Today;
-            weekNumber = DateHelper.GetIsoWeekNumber(today);
-            year = DateHelper.GetIsoWeekYear(today);
+            WeekNumber = DateHelper.GetIsoWeekNumber(today);
+            Year = DateHelper.GetIsoWeekYear(today);
 
             WeakReferenceMessenger.Default.Register<CompletionChangedMessage>(this, async (r, m) => await LoadAsync());
         }
 
         [ObservableProperty]
-        private int weekNumber;
+        public partial int WeekNumber { get; set; }
 
         [ObservableProperty]
-        private int year;
+        public partial int Year { get; set; }
 
         [ObservableProperty]
-        private string weekLabel = string.Empty;
+        public partial string WeekLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string dateRangeLabel = string.Empty;
+        public partial string DateRangeLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<WeekDaySummary> days = new();
+        public partial ObservableCollection<WeekDaySummary> Days { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<CategorySummary> categories = new();
+        public partial ObservableCollection<CategorySummary> Categories { get; set; } = new();
 
         [ObservableProperty]
-        private string weekTotalLabel = string.Empty;
+        public partial string WeekTotalLabel { get; set; } = string.Empty;
 
         [RelayCommand]
         public async Task LoadAsync()

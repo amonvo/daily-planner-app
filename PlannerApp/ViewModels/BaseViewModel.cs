@@ -5,9 +5,12 @@ namespace PlannerApp.ViewModels
     public partial class BaseViewModel : ObservableObject
     {
         [ObservableProperty]
-        private bool isBusy;
+        public partial string ErrorMessage { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string title = string.Empty;
+        public partial bool IsBusy { get; set; }
+
+        [ObservableProperty]
+        public partial string Title { get; set; } = string.Empty;
     }
 }

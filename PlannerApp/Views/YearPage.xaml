@@ -8,7 +8,7 @@
              BackgroundColor="{AppThemeBinding Light={StaticResource AppBackgroundLight}, Dark={StaticResource AppBackgroundDark}}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="14">
+        <VerticalStackLayout Padding="24" Spacing="18" MaximumWidthRequest="920" HorizontalOptions="Fill">
 
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">

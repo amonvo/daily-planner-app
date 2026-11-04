@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="PlannerApp.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -12,7 +12,7 @@
         <ShellContent Title="Týden" Route="week" ContentTemplate="{DataTemplate views:WeekPage}" />
         <ShellContent Title="Měsíc" Route="month" ContentTemplate="{DataTemplate views:MonthPage}" />
         <ShellContent Title="Rok" Route="year" ContentTemplate="{DataTemplate views:YearPage}" />
-        <ShellContent Title="O aplikaci" Route="about" ContentTemplate="{DataTemplate views:AboutPage}" />
+        <ShellContent Title="Nastavení" Route="settings" ContentTemplate="{DataTemplate views:SettingsPage}" />
     </TabBar>
 
 </Shell>

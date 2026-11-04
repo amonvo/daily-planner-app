@@ -43,50 +43,50 @@ namespace PlannerApp.ViewModels
             _db = db;
             Title = "Mesic";
             var today = DateTime.Today;
-            month = today.Month;
-            year = today.Year;
+            Month = today.Month;
+            Year = today.Year;
 
             WeakReferenceMessenger.Default.Register<CompletionChangedMessage>(this, async (r, m) => await LoadAsync());
         }
 
         [ObservableProperty]
-        private int month;
+        public partial int Month { get; set; }
 
         [ObservableProperty]
-        private int year;
+        public partial int Year { get; set; }
 
         [ObservableProperty]
-        private string monthLabel = string.Empty;
+        public partial string MonthLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<MonthDayCell> cells = new();
+        public partial ObservableCollection<MonthDayCell> Cells { get; set; } = new();
 
         [ObservableProperty]
-        private string summaryLabel = string.Empty;
+        public partial string SummaryLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string streakLabel = string.Empty;
+        public partial string StreakLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string longestStreakLabel = string.Empty;
+        public partial string LongestStreakLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string bestWeekLabel = string.Empty;
+        public partial string BestWeekLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string worstWeekLabel = string.Empty;
+        public partial string WorstWeekLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string specialDaysLabel = string.Empty;
+        public partial string SpecialDaysLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private double monthTotalProgress;
+        public partial double MonthTotalProgress { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<MonthCategoryStat> categoryStats = new();
+        public partial ObservableCollection<MonthCategoryStat> CategoryStats { get; set; } = new();
 
         [ObservableProperty]
-        private ObservableCollection<string> holidays = new();
+        public partial ObservableCollection<string> Holidays { get; set; } = new();
 
         [RelayCommand]
         public async Task LoadAsync()

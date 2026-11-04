@@ -24,64 +24,64 @@ namespace PlannerApp.ViewModels
         }
 
         [ObservableProperty]
-        private string dateLabel = string.Empty;
+        public partial string DateLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string dayTypeLabel = string.Empty;
+        public partial string DayTypeLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string dayTypeBadgeColor = "#7C3AED";
+        public partial string DayTypeBadgeColor { get; set; } = "#7C3AED";
 
         [ObservableProperty]
-        private ObservableCollection<BlockViewModel> blocks = new();
+        public partial ObservableCollection<BlockViewModel> Blocks { get; set; } = new();
 
         [ObservableProperty]
-        private int doneCount;
+        public partial int DoneCount { get; set; }
 
         [ObservableProperty]
-        private int totalRequired;
+        public partial int TotalRequired { get; set; }
 
         [ObservableProperty]
-        private double progressPercent;
+        public partial double ProgressPercent { get; set; }
 
         [ObservableProperty]
-        private string progressLabel = "0 / 0 splneno (0 %)";
+        public partial string ProgressLabel { get; set; } = "0 / 0 splneno (0 %)";
 
         [ObservableProperty]
-        private string currentBlockName = "Zadna aktivita";
+        public partial string CurrentBlockName { get; set; } = "Zadna aktivita";
 
         [ObservableProperty]
-        private string currentBlockTime = string.Empty;
+        public partial string CurrentBlockTime { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string currentBlockColor = "#7C3AED";
+        public partial string CurrentBlockColor { get; set; } = "#7C3AED";
 
         [ObservableProperty]
-        private string nextBlockName = "Zadna dalsi aktivita dnes";
+        public partial string NextBlockName { get; set; } = "Zadna dalsi aktivita dnes";
 
         [ObservableProperty]
-        private string nextBlockInfo = "Zadna dalsi aktivita dnes";
+        public partial string NextBlockInfo { get; set; } = "Zadna dalsi aktivita dnes";
 
         [ObservableProperty]
-        private string notes = string.Empty;
+        public partial string Notes { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private bool isSpecialDay;
+        public partial bool IsSpecialDay { get; set; }
 
         [ObservableProperty]
-        private string specialDayLabel = string.Empty;
+        public partial string SpecialDayLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private bool isPastDay;
+        public partial bool IsPastDay { get; set; }
 
         [ObservableProperty]
-        private bool isFutureDay;
+        public partial bool IsFutureDay { get; set; }
 
         [ObservableProperty]
-        private bool isToday;
+        public partial bool IsToday { get; set; }
 
         [ObservableProperty]
-        private bool canEdit = true;
+        public partial bool CanEdit { get; set; } = true;
 
         public async Task LoadDayAsync(DateTime date)
         {
@@ -137,6 +137,7 @@ namespace PlannerApp.ViewModels
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"LoadDay error: {ex}");
+                ErrorMessage = "Data se nepodařilo načíst. Zkuste to znovu.";
             }
             finally
             {
@@ -262,8 +263,9 @@ namespace PlannerApp.ViewModels
         [RelayCommand]
         private async Task MarkDoneAsync(BlockViewModel? block)
         {
+            try
+            {
             if (!CanEdit || block is null || _currentDayLog is null) return;
-            block.Status = CompletionStatus.Done;
             await _db.UpsertCompletionAsync(new BlockCompletion
             {
                 DayLogId = _currentDayLog.Id,
@@ -271,15 +273,20 @@ namespace PlannerApp.ViewModels
                 Status = CompletionStatus.Done,
                 CompletedAt = DateTime.Now
             });
+            block.Status = CompletionStatus.Done;
             UpdateStats();
             WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
+        
+            }
+            catch (Exception ex) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         [RelayCommand]
         private async Task MarkSkippedAsync(BlockViewModel? block)
         {
+            try
+            {
             if (!CanEdit || block is null || _currentDayLog is null) return;
-            block.Status = CompletionStatus.Skipped;
             await _db.UpsertCompletionAsync(new BlockCompletion
             {
                 DayLogId = _currentDayLog.Id,
@@ -287,15 +294,20 @@ namespace PlannerApp.ViewModels
                 Status = CompletionStatus.Skipped,
                 CompletedAt = DateTime.Now
             });
+            block.Status = CompletionStatus.Skipped;
             UpdateStats();
             WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
+        
+            }
+            catch (Exception ex) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         [RelayCommand]
         private async Task ResetBlockAsync(BlockViewModel? block)
         {
+            try
+            {
             if (!CanEdit || block is null || _currentDayLog is null) return;
-            block.Status = CompletionStatus.NotDone;
             await _db.UpsertCompletionAsync(new BlockCompletion
             {
                 DayLogId = _currentDayLog.Id,
@@ -303,8 +315,12 @@ namespace PlannerApp.ViewModels
                 Status = CompletionStatus.NotDone,
                 CompletedAt = null
             });
+            block.Status = CompletionStatus.NotDone;
             UpdateStats();
             WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
+        
+            }
+            catch (Exception ex) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         [RelayCommand]
@@ -317,11 +333,11 @@ namespace PlannerApp.ViewModels
                 return;
             }
 
-            var page = Application.Current?.MainPage;
+            var page = Application.Current?.Windows.FirstOrDefault()?.Page;
             if (page is null) return;
 
             var options = new[] { "Festival", "Nemoc", "Dovolena", "Jine" };
-            var result = await page.DisplayActionSheet("Oznacit jako specialni den", "Zrusit", null, options);
+            var result = await page.DisplayActionSheetAsync("Oznacit jako specialni den", "Zrusit", null, options);
             if (result is null || result == "Zrusit") return;
 
             string label = result;
@@ -358,7 +374,13 @@ namespace PlannerApp.ViewModels
         {
             if (_suppressNotesSave || _currentDayLog is null || !CanEdit) return;
             _currentDayLog.Notes = value;
-            _ = _db.UpdateDayLogAsync(_currentDayLog);
+            _ = SaveNotesAsync(_currentDayLog);
+        }
+
+        private async Task SaveNotesAsync(DayLog log)
+        {
+            try { await _db.UpdateDayLogAsync(log); }
+            catch (Exception ex) { ErrorMessage = "Poznámku se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         public void Dispose()

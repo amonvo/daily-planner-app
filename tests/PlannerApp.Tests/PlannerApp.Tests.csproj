@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><IsTestProject>true</IsTestProject></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
+    <Compile Include="../../PlannerApp/Models/*.cs" Link="Models/%(Filename)%(Extension)" />
+    <Compile Include="../../PlannerApp/Helpers/*.cs" Link="Helpers/%(Filename)%(Extension)" />
+    <Compile Include="../../PlannerApp/Services/DatabaseService.cs" Link="Services/DatabaseService.cs" />
+  </ItemGroup>
+</Project>

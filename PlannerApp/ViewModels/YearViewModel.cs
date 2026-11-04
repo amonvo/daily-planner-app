@@ -34,50 +34,50 @@ namespace PlannerApp.ViewModels
         {
             _db = db;
             Title = "Rok";
-            year = DateTime.Today.Year;
-            if (year < 2026) year = 2026;
+            Year = DateTime.Today.Year;
+            if (Year < 2026) Year = 2026;
 
             WeakReferenceMessenger.Default.Register<CompletionChangedMessage>(this, async (r, m) => await LoadAsync());
         }
 
         [ObservableProperty]
-        private int year;
+        public partial int Year { get; set; }
 
         [ObservableProperty]
-        private string yearLabel = string.Empty;
+        public partial string YearLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<MonthTile> tiles = new();
+        public partial ObservableCollection<MonthTile> Tiles { get; set; } = new();
 
         [ObservableProperty]
-        private string daysWithDataLabel = string.Empty;
+        public partial string DaysWithDataLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string longestStreakLabel = string.Empty;
+        public partial string LongestStreakLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string bestMonthLabel = string.Empty;
+        public partial string BestMonthLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string worstMonthLabel = string.Empty;
+        public partial string WorstMonthLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string yearTotalLabel = string.Empty;
+        public partial string YearTotalLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string totalBlocksLabel = string.Empty;
+        public partial string TotalBlocksLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string specialDaysLabel = string.Empty;
+        public partial string SpecialDaysLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private string taborWeekendsLabel = string.Empty;
+        public partial string TaborWeekendsLabel { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private double yearTotalProgress;
+        public partial double YearTotalProgress { get; set; }
 
         [ObservableProperty]
-        private ObservableCollection<ActivityStat> activityStats = new();
+        public partial ObservableCollection<ActivityStat> ActivityStats { get; set; } = new();
 
         [RelayCommand]
         public async Task LoadAsync()
