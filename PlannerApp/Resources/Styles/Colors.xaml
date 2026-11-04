@@ -6,9 +6,9 @@
 
     <Color x:Key="Primary">#285C50</Color>
     <Color x:Key="PrimaryDark">#A6CFB4</Color>
-    <Color x:Key="PrimaryDarkText">#FFFFFF</Color>
+    <Color x:Key="PrimaryDarkText">#14231E</Color>
     <Color x:Key="Secondary">#E2EBD9</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
+    <Color x:Key="SecondaryDarkText">#A6CFB4</Color>
     <Color x:Key="Tertiary">#173B35</Color>
 
     <Color x:Key="White">White</Color>
@@ -25,7 +25,8 @@
     <Color x:Key="CardBorderDark">#3B5448</Color>
     <Color x:Key="TextPrimaryLight">#233A30</Color>
     <Color x:Key="TextPrimaryDark">#F1F5F9</Color>
-    <Color x:Key="TextSecondary">#718277</Color>
+    <Color x:Key="TextSecondary">#596C61</Color>
+    <Color x:Key="TextSecondaryDark">#B5C8BC</Color>
 
     <Color x:Key="AccentGreen">#059669</Color>
     <Color x:Key="AccentRed">#DC2626</Color>

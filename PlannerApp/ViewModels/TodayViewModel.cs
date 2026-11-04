@@ -93,15 +93,14 @@ namespace PlannerApp.ViewModels
         public string ProgressHint => IsSpecialDay ? "Dnes si dejte prostor. Tento den se do statistik nezapočítává." : TotalRequired == 0 ? "Dnes nemáte povinné aktivity. Užijte si volnější tempo." : DoneCount == TotalRequired ? "Pro dnešek máte splněno. Dopřejte si zasloužený odpočinek." : "Jeden krok po druhém. I malý pokrok se počítá.";
         public bool HasCurrentAction => Blocks.Any(block => block.IsCurrentBlock && block.IsNotDone);
         public bool HasVisibleBlocks => VisibleBlocks.Any();
-        private static Color FilterColor(bool active) => active ? Color.FromArgb(Application.Current?.RequestedTheme == AppTheme.Dark ? "#365C48" : "#E2EBD9") : Colors.Transparent;
-        public Color AllFilterBackground => FilterColor(filter == "all");
-        public Color PendingFilterBackground => FilterColor(filter == "pending");
-        public Color FocusFilterBackground => FilterColor(filter == "focus");
+        public bool IsAllFilter => filter == "all";
+        public bool IsPendingFilter => filter == "pending";
+        public bool IsFocusFilter => filter == "focus";
         [RelayCommand] private void SetFilter(string value)
         {
             filter = value;
             OnPropertyChanged(nameof(VisibleBlocks)); OnPropertyChanged(nameof(HasVisibleBlocks));
-            OnPropertyChanged(nameof(AllFilterBackground)); OnPropertyChanged(nameof(PendingFilterBackground)); OnPropertyChanged(nameof(FocusFilterBackground));
+            OnPropertyChanged(nameof(IsAllFilter)); OnPropertyChanged(nameof(IsPendingFilter)); OnPropertyChanged(nameof(IsFocusFilter));
         }
         [RelayCommand] private async Task CompleteCurrentAsync() => await SaveStatusAsync(Blocks.FirstOrDefault(block => block.IsCurrentBlock), CompletionStatus.Done);
         [RelayCommand] private async Task OpenTrendDayAsync(TrendPoint point) => await Shell.Current.GoToAsync($"daydetail?date={point.Date:yyyy-MM-dd}");

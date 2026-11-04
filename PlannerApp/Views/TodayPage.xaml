@@ -62,9 +62,15 @@
             <Label Text="{Binding ActionMessage}" TextColor="{AppThemeBinding Light=#285C50, Dark=#A6CFB4}" FontSize="12" />
             <Button Text="↶ Vrátit poslední změnu" Command="{Binding UndoLastCommand}" IsVisible="{Binding CanUndo}" Style="{StaticResource ResetButton}" HorizontalOptions="Start" />
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
-                <Button Text="Celý den" Command="{Binding SetFilterCommand}" CommandParameter="all" BackgroundColor="{Binding AllFilterBackground}" Style="{StaticResource FilterButton}" />
-                <Button Grid.Column="1" Text="Zbývající" Command="{Binding SetFilterCommand}" CommandParameter="pending" BackgroundColor="{Binding PendingFilterBackground}" Style="{StaticResource FilterButton}" />
-                <Button Grid.Column="2" Text="Priority" Command="{Binding SetFilterCommand}" CommandParameter="focus" BackgroundColor="{Binding FocusFilterBackground}" Style="{StaticResource FilterButton}" />
+                <Button Text="Celý den" Command="{Binding SetFilterCommand}" CommandParameter="all" Style="{StaticResource FilterButton}">
+                    <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsAllFilter}" Value="True"><Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E2EBD9, Dark=#365C48}" /></DataTrigger></Button.Triggers>
+                </Button>
+                <Button Grid.Column="1" Text="Zbývající" Command="{Binding SetFilterCommand}" CommandParameter="pending" Style="{StaticResource FilterButton}">
+                    <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsPendingFilter}" Value="True"><Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E2EBD9, Dark=#365C48}" /></DataTrigger></Button.Triggers>
+                </Button>
+                <Button Grid.Column="2" Text="Priority" Command="{Binding SetFilterCommand}" CommandParameter="focus" Style="{StaticResource FilterButton}">
+                    <Button.Triggers><DataTrigger TargetType="Button" Binding="{Binding IsFocusFilter}" Value="True"><Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#E2EBD9, Dark=#365C48}" /></DataTrigger></Button.Triggers>
+                </Button>
             </Grid>
 
             <!-- Blocks list -->
