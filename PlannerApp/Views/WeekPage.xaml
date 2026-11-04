@@ -14,12 +14,12 @@
 
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevWeekCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                     <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center">
                         <Label Text="{Binding WeekLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" />
                         <Label Text="{Binding DateRangeLabel}" Style="{StaticResource Muted}" HorizontalTextAlignment="Center" />
                     </VerticalStackLayout>
-                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextWeekCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextWeekCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                 </Grid>
             </Border>
 

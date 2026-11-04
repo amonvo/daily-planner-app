@@ -115,20 +115,28 @@ namespace PlannerApp.ViewModels
         private async Task SaveStatusAsync(BlockViewModel? block, CompletionStatus status, bool allowUndo = true)
         {
             if (block is null || _currentDayLog is null) return;
+            var dayLog = _currentDayLog;
             await actionLock.WaitAsync();
             try {
                 ErrorMessage = string.Empty;
                 var previous = block.Status;
-                await _db.UpsertCompletionAsync(new BlockCompletion { DayLogId = _currentDayLog.Id, ScheduleBlockId = block.ScheduleBlockId, Status = status, CompletedAt = status == CompletionStatus.NotDone ? null : DateTime.Now });
+                await _db.UpsertCompletionAsync(new BlockCompletion { DayLogId = dayLog.Id, ScheduleBlockId = block.ScheduleBlockId, Status = status, CompletedAt = status == CompletionStatus.NotDone ? null : DateTime.Now });
+                if (_currentDayLog?.Id != dayLog.Id) return;
                 block.Status = status;
                 undoBlock = block; undoStatus = previous; CanUndo = allowUndo;
                 ActionMessage = allowUndo ? $"{block.ActivityName} · {(status == CompletionStatus.Done ? "splněno" : status == CompletionStatus.Skipped ? "přeskočeno" : "vráceno do plánu")}" : "Poslední změna byla vrácena.";
                 UpdateStats(); RefreshCurrentBlock();
-                RecentTrend = await new InsightService(_db).GetDaysAsync(DateTime.Today.AddDays(-6), DateTime.Today);
+                await RefreshTrendAsync();
                 WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
             }
             catch (Exception exception) { ErrorMessage = "Změnu se nepodařilo uložit. Zkuste to znovu."; System.Diagnostics.Debug.WriteLine(exception); }
             finally { actionLock.Release(); }
+        }
+
+        private async Task RefreshTrendAsync()
+        {
+            try { RecentTrend = await new InsightService(_db).GetDaysAsync(DateTime.Today.AddDays(-6), DateTime.Today); }
+            catch (Exception exception) { ErrorMessage = "Přehled posledních dní se nepodařilo obnovit. Zkuste stránku otevřít znovu."; System.Diagnostics.Debug.WriteLine(exception); }
         }
 
         public DateTime SelectedDate
@@ -191,7 +199,7 @@ namespace PlannerApp.ViewModels
 
                 UpdateStats();
                 RefreshCurrentBlock();
-                RecentTrend = await new InsightService(_db).GetDaysAsync(DateTime.Today.AddDays(-6), DateTime.Today);
+                await RefreshTrendAsync();
                 StartTimer();
             }
             catch (Exception ex)
@@ -362,6 +370,7 @@ namespace PlannerApp.ViewModels
             IsSpecialDay = true;
             SpecialDayLabel = label;
             UpdateStats();
+            await RefreshTrendAsync();
             WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
         }
 
@@ -375,6 +384,7 @@ namespace PlannerApp.ViewModels
             IsSpecialDay = false;
             SpecialDayLabel = string.Empty;
             UpdateStats();
+            await RefreshTrendAsync();
             WeakReferenceMessenger.Default.Send(new CompletionChangedMessage());
         }
 

@@ -13,9 +13,9 @@
 
             <Border Style="{StaticResource Card}">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevYearCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                     <Label Grid.Column="1" Text="{Binding YearLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" VerticalOptions="Center" />
-                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextYearCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextYearCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
                 </Grid>
             </Border>
 

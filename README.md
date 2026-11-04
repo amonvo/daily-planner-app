@@ -58,3 +58,7 @@ Regresní testy ověřují Velikonoce ve více letech, přelom roku, půlnoc, p�
 `PlannerApp/Views` obsahuje obrazovky, `ViewModels` stav a příkazy, `Services` databázi a notifikace, `Helpers` kalendář a časové výpočty a `Models` SQLite záznamy. `tests/PlannerApp.Tests` testuje skutečnou databázovou službu bez mobilního prostředí.
 
 Projekt je určen pro osobní použití. Samostatná licence pro další distribuci zatím nebyla stanovena.
+
+## Přehled a grafy
+
+Úvodní obrazovka ukazuje dnešní priority, aktuální aktivitu a trend sedmi dní. Filtry Celý den, Zbývající a Priority zjednodušují plán. Poslední změnu stavu lze vrátit. Týdenní, měsíční a roční grafy počítají pouze zaznamenané povinné aktivity, vynechávají zvláštní i budoucí dny a odlišují chybějící záznam od nulového plnění. Klepnutím na sloupec v denním přehledu otevřete detail dne. Série alespoň 75% plnění musí navazovat v kalendáři bez mezer.

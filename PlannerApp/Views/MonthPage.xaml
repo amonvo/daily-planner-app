@@ -13,6 +13,15 @@
         <VerticalStackLayout Padding="24" Spacing="18" MaximumWidthRequest="920" HorizontalOptions="Fill">
 
             <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource AccentRed}" />
+
+
+            <Border Style="{StaticResource Card}">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevMonthCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                    <Label Grid.Column="1" Text="{Binding MonthLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" VerticalOptions="Center" />
+                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextMonthCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
+                </Grid>
+            </Border>
             <Border Style="{StaticResource Card}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Jak se vám daří" Style="{StaticResource H2}" />
@@ -20,14 +29,6 @@
                     <charts:ProgressChart Points="{Binding Trend}" />
                     <Label Text="Zelená = zaznamenané plnění. Pomlčka = bez záznamu, volný nebo budoucí den." Style="{StaticResource Muted}" />
                 </VerticalStackLayout>
-            </Border>
-
-            <Border Style="{StaticResource Card}">
-                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                    <Button Grid.Column="0" Text="&#x2039;" Command="{Binding PrevMonthCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
-                    <Label Grid.Column="1" Text="{Binding MonthLabel}" Style="{StaticResource H1}" HorizontalTextAlignment="Center" VerticalOptions="Center" />
-                    <Button Grid.Column="2" Text="&#x203A;" Command="{Binding NextMonthCommand}" WidthRequest="44" Style="{StaticResource PrimaryButton}" />
-                </Grid>
             </Border>
 
             <Border Style="{StaticResource Card}">
